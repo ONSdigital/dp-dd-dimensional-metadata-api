@@ -5,6 +5,8 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
+import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
+import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
 
@@ -16,6 +18,7 @@ import static org.mockito.Mockito.when;
 public class MetadataServiceTest {
 
     private static final String BASE_URL = "http://example.org/dd-test-api";
+    private static final String DATASET_ID = "ac31776f-17a8-4e68-a673-e19589b23496";
 
     @Mock
     private MetadataDao mockDao;
@@ -43,13 +46,12 @@ public class MetadataServiceTest {
 
     @Test
     public void shouldConstructCorrectURLs() throws Exception {
-        String uuid = "ac31776f-17a8-4e68-a673-e19589b23496";
-        when(mockDao.findAllDataSets()).thenReturn(Collections.singletonList(dbDataSet(UUID.fromString(uuid), "", "")));
+        when(mockDao.findAllDataSets()).thenReturn(Collections.singletonList(dbDataSet(UUID.fromString(DATASET_ID), "", "")));
 
         Set<DataSet> result = metadataService.listAvailableDataSets();
 
         assertThat(result).hasSize(1);
-        assertThat(result.iterator().next().getUrl()).isEqualTo(BASE_URL + "/datasets/" + uuid);
+        assertThat(result.iterator().next().getUrl()).isEqualTo(BASE_URL + "/datasets/" + DATASET_ID);
     }
 
     @Test
@@ -80,11 +82,40 @@ public class MetadataServiceTest {
         assertDataSetEqualsDbModel(result, dbDataSet);
     }
 
+    @Test(expectedExceptions = DataSetNotFoundException.class)
+    public void shouldFailIfDataSetNotFound() throws Exception {
+        when(mockDao.findDataSetById(DATASET_ID)).thenThrow(new DataSetNotFoundException("test"));
+
+        metadataService.findDataSetById(DATASET_ID);
+    }
+
+    @Test(expectedExceptions = DataSetNotFoundException.class)
+    public void shouldFailIfDataSetNotFoundForDimension() throws Exception {
+        when(mockDao.findDataSetById(DATASET_ID)).thenThrow(new DataSetNotFoundException("test"));
+
+        metadataService.findDimensionById(DATASET_ID, "any");
+    }
+
+    @Test(expectedExceptions = DimensionNotFoundException.class)
+    public void shouldFailIfDimensionNotFound() throws Exception {
+        String dimensionId = "testDimension";
+        when(mockDao.findVariableByDataSetAndDimensionId(DATASET_ID, dimensionId)).thenThrow(new DimensionNotFoundException(dimensionId));
+
+        metadataService.findDimensionById(DATASET_ID, dimensionId);
+    }
+
+    @Test(expectedExceptions = DataSetNotFoundException.class)
+    public void shouldFailToFindDimensionIfDataSetNotFound() throws Exception {
+        String dimensionId = "testDimension";
+        when(mockDao.findVariableByDataSetAndDimensionId(DATASET_ID, dimensionId)).thenThrow(new DataSetNotFoundException("test"));
+
+        metadataService.findDimensionById(DATASET_ID, dimensionId);
+    }
+
     private static void assertDataSetEqualsDbModel(final DataSet actual, final DimensionalDataSet expected) {
         assertThat(actual.getId()).isEqualTo(expected.getDimensionalDataSetId().toString());
         assertThat(actual.getTitle()).isEqualTo(expected.getTitle());
-        assertThat(actual.getMetadata()).isNotNull();
-        assertThat(actual.getMetadata().getDescription()).isEqualTo(expected.getDescription());
+        assertThat(actual.getDescription()).isEqualTo(expected.getDescription());
     }
 
     private DimensionalDataSet dbDataSet(UUID dataSetId, String title, String description) {

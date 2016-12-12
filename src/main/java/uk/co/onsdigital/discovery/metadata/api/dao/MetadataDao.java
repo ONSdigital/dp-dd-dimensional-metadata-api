@@ -1,6 +1,9 @@
 package uk.co.onsdigital.discovery.metadata.api.dao;
 
+import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
+import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
+import uk.co.onsdigital.discovery.model.Variable;
 
 import java.util.List;
 
@@ -9,5 +12,7 @@ import java.util.List;
  */
 public interface MetadataDao {
     List<DimensionalDataSet> findAllDataSets();
-    DimensionalDataSet findDataSetById(String dataSetId);
+    DimensionalDataSet findDataSetById(String dataSetId) throws DataSetNotFoundException;
+    List<Variable> getVariablesInDataSet(String dataSetId);
+    Variable findVariableByDataSetAndDimensionId(String dataSetId, String dimensionId) throws DataSetNotFoundException, DimensionNotFoundException;
 }

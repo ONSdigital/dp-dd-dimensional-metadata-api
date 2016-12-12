@@ -3,14 +3,14 @@ package uk.co.onsdigital.discovery.metadata.api.model;
 import java.util.Set;
 
 /**
- * JSON model of a data set.
+ * Represents metadata about a particular dataset.
  */
 public class DataSet {
 
     private String id;
     private String title;
     private String url;
-    private Metadata metadata;
+    private String description;
     private Set<Dimension> dimensions;
 
     public String getId() {
@@ -37,12 +37,12 @@ public class DataSet {
         this.url = url;
     }
 
-    public Metadata getMetadata() {
-        return metadata;
+    public String getDescription() {
+        return description;
     }
 
-    public void setMetadata(Metadata metadata) {
-        this.metadata = metadata;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
@@ -51,7 +51,7 @@ public class DataSet {
                 "id='" + id + '\'' +
                 ", title='" + title + '\'' +
                 ", url='" + url + '\'' +
-                ", metadata=" + metadata +
+                ", description=" + description +
                 '}';
     }
 }

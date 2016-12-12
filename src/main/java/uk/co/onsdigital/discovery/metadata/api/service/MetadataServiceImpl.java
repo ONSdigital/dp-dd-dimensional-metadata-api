@@ -1,9 +1,9 @@
 package uk.co.onsdigital.discovery.metadata.api.service;
 
 import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
+import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
 import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
-import uk.co.onsdigital.discovery.metadata.api.model.Metadata;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
 
 import java.util.HashSet;
@@ -36,7 +36,7 @@ public class MetadataServiceImpl implements MetadataService {
         return resultDataSets;
     }
 
-    public DataSet findDataSetById(String dataSetId) {
+    public DataSet findDataSetById(String dataSetId) throws DataSetNotFoundException {
         return convertDataSet(metadataDao.findDataSetById(dataSetId));
     }
 
@@ -52,7 +52,7 @@ public class MetadataServiceImpl implements MetadataService {
         final DataSet dataSet = new DataSet();
         dataSet.setId(dbDataSet.getDimensionalDataSetId().toString());
         dataSet.setTitle(dbDataSet.getTitle());
-        dataSet.setMetadata(new Metadata(dbDataSet.getDescription()));
+        dataSet.setDescription(dbDataSet.getDescription());
 
         dataSet.setUrl(String.format(Locale.ROOT, DATASET_TEMPLATE, baseUrl, dbDataSet.getDimensionalDataSetId().toString()));
         return dataSet;
