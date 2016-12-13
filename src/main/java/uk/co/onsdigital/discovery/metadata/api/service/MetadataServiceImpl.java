@@ -2,6 +2,7 @@ package uk.co.onsdigital.discovery.metadata.api.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
@@ -32,6 +33,7 @@ public class MetadataServiceImpl implements MetadataService {
         this.baseUrl = baseUrl;
     }
 
+    @Transactional(readOnly = true)
     public Set<DataSet> listAvailableDataSets() {
         final List<DimensionalDataSet> dbDataSets = metadataDao.findAllDataSets();
         final Set<DataSet> resultDataSets = new HashSet<>(dbDataSets.size());
@@ -43,10 +45,12 @@ public class MetadataServiceImpl implements MetadataService {
         return resultDataSets;
     }
 
+    @Transactional(readOnly = true)
     public DataSet findDataSetById(String dataSetId) throws DataSetNotFoundException {
         return convertDataSet(metadataDao.findDataSetById(dataSetId));
     }
 
+    @Transactional(readOnly = true)
     public Set<Dimension> listDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException {
         final List<Variable> variables = metadataDao.findVariablesInDataSet(dataSetId);
         final Set<Dimension> dimensions = new HashSet<>(variables.size());
@@ -61,6 +65,7 @@ public class MetadataServiceImpl implements MetadataService {
         return dimensions;
     }
 
+    @Transactional(readOnly = true)
     public Dimension findDimensionById(String dataSetId, String dimensionId) throws DataSetNotFoundException, DimensionNotFoundException {
         final Variable variable = metadataDao.findVariableByDataSetAndVariableId(dataSetId, dimensionId);
         return convertVariableToDimension(variable);

@@ -5,6 +5,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +17,7 @@ import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
 import uk.co.onsdigital.discovery.metadata.api.service.MetadataService;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import java.util.Set;
 
@@ -59,7 +62,17 @@ public class MetadataController implements MetadataService {
     }
 
     @Bean
-    public EntityManager getEntityManager() {
-        return Persistence.createEntityManagerFactory("data_discovery").createEntityManager();
+    public EntityManagerFactory getEntityManagerFactory() {
+        return Persistence.createEntityManagerFactory("data_discovery");
+    }
+
+    @Bean
+    public EntityManager getEntityManager(final EntityManagerFactory emf) {
+        return emf.createEntityManager();
+    }
+
+    @Bean
+    public PlatformTransactionManager getTransactionManager(final EntityManagerFactory emf) {
+        return new JpaTransactionManager(emf);
     }
 }
