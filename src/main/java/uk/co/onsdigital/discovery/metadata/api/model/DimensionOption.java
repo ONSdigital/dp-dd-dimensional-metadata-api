@@ -1,7 +1,7 @@
 package uk.co.onsdigital.discovery.metadata.api.model;
 
 /**
- * Created by neil on 12/12/2016.
+ * A possible option for a dimension, such as <em>Male</em> or <em>Female</em> for the dimension <em>Sex</em>.
  */
 public class DimensionOption {
     private final String id;

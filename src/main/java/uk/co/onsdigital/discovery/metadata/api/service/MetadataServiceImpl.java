@@ -16,7 +16,7 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * Created by neil on 12/12/2016.
+ * Implementation of the {@link MetadataService}.
  */
 public class MetadataServiceImpl implements MetadataService {
     private static final String DATASET_TEMPLATE = "%s/datasets/%s";
@@ -45,7 +45,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     public Set<Dimension> listDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException {
-        final List<Variable> variables = metadataDao.getVariablesInDataSet(dataSetId);
+        final List<Variable> variables = metadataDao.findVariablesInDataSet(dataSetId);
         final Set<Dimension> dimensions = new HashSet<>(variables.size());
 
         for (Variable variable : variables) {
@@ -59,7 +59,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     public Dimension findDimensionById(String dataSetId, String dimensionId) throws DataSetNotFoundException, DimensionNotFoundException {
-        final Variable variable = metadataDao.findVariableByDataSetAndDimensionId(dataSetId, dimensionId);
+        final Variable variable = metadataDao.findVariableByDataSetAndVariableId(dataSetId, dimensionId);
         return convertVariableToDimension(variable);
     }
 

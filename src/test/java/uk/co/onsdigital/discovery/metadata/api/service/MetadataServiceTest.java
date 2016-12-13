@@ -7,6 +7,7 @@ import org.testng.annotations.Test;
 import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
+import uk.co.onsdigital.discovery.metadata.api.exception.VariableNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
 import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
 import uk.co.onsdigital.discovery.metadata.api.model.DimensionOption;
@@ -99,7 +100,7 @@ public class MetadataServiceTest {
 
     @Test(expectedExceptions = DataSetNotFoundException.class)
     public void shouldFailIfDataSetNotFoundForDimension() throws Exception {
-        when(mockDao.findVariableByDataSetAndDimensionId(DATASET_ID, "any")).thenThrow(new DataSetNotFoundException("test"));
+        when(mockDao.findVariableByDataSetAndVariableId(DATASET_ID, "any")).thenThrow(new DataSetNotFoundException("test"));
 
         metadataService.findDimensionById(DATASET_ID, "any");
     }
@@ -107,7 +108,7 @@ public class MetadataServiceTest {
     @Test(expectedExceptions = DimensionNotFoundException.class)
     public void shouldFailIfDimensionNotFound() throws Exception {
         String dimensionId = "testDimension";
-        when(mockDao.findVariableByDataSetAndDimensionId(DATASET_ID, dimensionId)).thenThrow(new DimensionNotFoundException(dimensionId));
+        when(mockDao.findVariableByDataSetAndVariableId(DATASET_ID, dimensionId)).thenThrow(new VariableNotFoundException(dimensionId));
 
         metadataService.findDimensionById(DATASET_ID, dimensionId);
     }
@@ -115,7 +116,7 @@ public class MetadataServiceTest {
     @Test(expectedExceptions = DataSetNotFoundException.class)
     public void shouldFailToFindDimensionIfDataSetNotFound() throws Exception {
         String dimensionId = "testDimension";
-        when(mockDao.findVariableByDataSetAndDimensionId(DATASET_ID, dimensionId)).thenThrow(new DataSetNotFoundException("test"));
+        when(mockDao.findVariableByDataSetAndVariableId(DATASET_ID, dimensionId)).thenThrow(new DataSetNotFoundException("test"));
 
         metadataService.findDimensionById(DATASET_ID, dimensionId);
     }
@@ -126,7 +127,7 @@ public class MetadataServiceTest {
         variable.setVariableId(42L);
         variable.setName("test name");
         variable.setCategories(Collections.singletonList(new Category()));
-        when(mockDao.getVariablesInDataSet(DATASET_ID)).thenReturn(Collections.singletonList(variable));
+        when(mockDao.findVariablesInDataSet(DATASET_ID)).thenReturn(Collections.singletonList(variable));
 
         Set<Dimension> result = metadataService.listDimensionsForDataSet(DATASET_ID);
 
@@ -139,7 +140,7 @@ public class MetadataServiceTest {
     @Test
     public void shouldMapVariableCategoriesToDimensionOptions() throws Exception {
         Variable variable = testVariable();
-        when(mockDao.getVariablesInDataSet(DATASET_ID)).thenReturn(Collections.singletonList(variable));
+        when(mockDao.findVariablesInDataSet(DATASET_ID)).thenReturn(Collections.singletonList(variable));
 
         Set<Dimension> result = metadataService.listDimensionsForDataSet(DATASET_ID);
 
@@ -151,7 +152,7 @@ public class MetadataServiceTest {
 
     @Test(expectedExceptions = DataSetNotFoundException.class)
     public void shouldFailToListDimensionsIfDataSetNotFound() throws Exception {
-        when(mockDao.getVariablesInDataSet(DATASET_ID)).thenThrow(new DataSetNotFoundException(""));
+        when(mockDao.findVariablesInDataSet(DATASET_ID)).thenThrow(new DataSetNotFoundException(""));
 
         metadataService.listDimensionsForDataSet(DATASET_ID);
     }
@@ -161,7 +162,7 @@ public class MetadataServiceTest {
         Variable variable = new Variable();
         variable.setVariableId(42L);
         variable.setName("test name");
-        when(mockDao.getVariablesInDataSet(DATASET_ID)).thenReturn(Collections.singletonList(variable));
+        when(mockDao.findVariablesInDataSet(DATASET_ID)).thenReturn(Collections.singletonList(variable));
 
         Set<Dimension> result = metadataService.listDimensionsForDataSet(DATASET_ID);
 
@@ -172,7 +173,7 @@ public class MetadataServiceTest {
     public void shouldConvertVariableToDimension() throws Exception {
         Variable variable = testVariable();
         String dimensionId = "42";
-        when(mockDao.findVariableByDataSetAndDimensionId(DATASET_ID, dimensionId)).thenReturn(variable);
+        when(mockDao.findVariableByDataSetAndVariableId(DATASET_ID, dimensionId)).thenReturn(variable);
 
         Dimension result = metadataService.findDimensionById(DATASET_ID, dimensionId);
 

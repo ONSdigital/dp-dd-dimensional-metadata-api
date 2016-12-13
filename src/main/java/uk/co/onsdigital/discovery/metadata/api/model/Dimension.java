@@ -4,12 +4,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by neil on 12/12/2016.
+ * Represents metadata about a dimension of a dataset.
  */
 public class Dimension {
     private String id;
     private String name;
-    private Set<DimensionOption> options = new HashSet<DimensionOption>();
+    private Set<DimensionOption> options = new HashSet<>();
 
     public String getId() {
         return id;
