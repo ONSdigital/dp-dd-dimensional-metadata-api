@@ -13,6 +13,6 @@ import java.util.List;
 public interface MetadataDao {
     List<DimensionalDataSet> findAllDataSets();
     DimensionalDataSet findDataSetById(String dataSetId) throws DataSetNotFoundException;
-    List<Variable> getVariablesInDataSet(String dataSetId);
+    List<Variable> getVariablesInDataSet(String dataSetId) throws DataSetNotFoundException;
     Variable findVariableByDataSetAndDimensionId(String dataSetId, String dimensionId) throws DataSetNotFoundException, DimensionNotFoundException;
 }

@@ -4,23 +4,20 @@ package uk.co.onsdigital.discovery.metadata.api.model;
  * Created by neil on 12/12/2016.
  */
 public class DimensionOption {
-    private String id;
-    private String name;
+    private final String id;
+    private final String name;
+
+    public DimensionOption(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     @Override

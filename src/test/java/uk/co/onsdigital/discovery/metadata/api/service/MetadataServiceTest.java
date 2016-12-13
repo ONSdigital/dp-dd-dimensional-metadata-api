@@ -8,9 +8,17 @@ import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
+import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
+import uk.co.onsdigital.discovery.metadata.api.model.DimensionOption;
+import uk.co.onsdigital.discovery.model.Category;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
+import uk.co.onsdigital.discovery.model.Variable;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -91,7 +99,7 @@ public class MetadataServiceTest {
 
     @Test(expectedExceptions = DataSetNotFoundException.class)
     public void shouldFailIfDataSetNotFoundForDimension() throws Exception {
-        when(mockDao.findDataSetById(DATASET_ID)).thenThrow(new DataSetNotFoundException("test"));
+        when(mockDao.findVariableByDataSetAndDimensionId(DATASET_ID, "any")).thenThrow(new DataSetNotFoundException("test"));
 
         metadataService.findDimensionById(DATASET_ID, "any");
     }
@@ -110,6 +118,80 @@ public class MetadataServiceTest {
         when(mockDao.findVariableByDataSetAndDimensionId(DATASET_ID, dimensionId)).thenThrow(new DataSetNotFoundException("test"));
 
         metadataService.findDimensionById(DATASET_ID, dimensionId);
+    }
+
+    @Test
+    public void shouldMapVariablesToDimensions() throws Exception {
+        Variable variable = new Variable();
+        variable.setVariableId(42L);
+        variable.setName("test name");
+        variable.setCategories(Collections.singletonList(new Category()));
+        when(mockDao.getVariablesInDataSet(DATASET_ID)).thenReturn(Collections.singletonList(variable));
+
+        Set<Dimension> result = metadataService.listDimensionsForDataSet(DATASET_ID);
+
+        assertThat(result).hasSize(1);
+        Dimension dimension = result.iterator().next();
+        assertThat(dimension.getId()).isEqualTo("42");
+        assertThat(dimension.getName()).isEqualTo("test name");
+    }
+
+    @Test
+    public void shouldMapVariableCategoriesToDimensionOptions() throws Exception {
+        Variable variable = testVariable();
+        when(mockDao.getVariablesInDataSet(DATASET_ID)).thenReturn(Collections.singletonList(variable));
+
+        Set<Dimension> result = metadataService.listDimensionsForDataSet(DATASET_ID);
+
+        assertThat(result).hasSize(1);
+        Dimension dimension = result.iterator().next();
+        assertThat(dimension).isNotNull();
+        assertThat(dimension.getOptions()).containsOnly(new DimensionOption("1", "Category 1"), new DimensionOption("2", "Category 2"));
+    }
+
+    @Test(expectedExceptions = DataSetNotFoundException.class)
+    public void shouldFailToListDimensionsIfDataSetNotFound() throws Exception {
+        when(mockDao.getVariablesInDataSet(DATASET_ID)).thenThrow(new DataSetNotFoundException(""));
+
+        metadataService.listDimensionsForDataSet(DATASET_ID);
+    }
+
+    @Test
+    public void shouldExcludeDimensionsWithNoOptions() throws Exception {
+        Variable variable = new Variable();
+        variable.setVariableId(42L);
+        variable.setName("test name");
+        when(mockDao.getVariablesInDataSet(DATASET_ID)).thenReturn(Collections.singletonList(variable));
+
+        Set<Dimension> result = metadataService.listDimensionsForDataSet(DATASET_ID);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    public void shouldConvertVariableToDimension() throws Exception {
+        Variable variable = testVariable();
+        String dimensionId = "42";
+        when(mockDao.findVariableByDataSetAndDimensionId(DATASET_ID, dimensionId)).thenReturn(variable);
+
+        Dimension result = metadataService.findDimensionById(DATASET_ID, dimensionId);
+
+        assertThat(result.getId()).isEqualTo(dimensionId);
+        assertThat(result.getName()).isEqualTo(variable.getName());
+        assertThat(result.getOptions()).hasSize(variable.getCategories().size());
+    }
+
+    private static Variable testVariable() {
+        Variable variable = new Variable();
+        variable.setVariableId(42L);
+        Category cat1 = new Category();
+        cat1.setName("Category 1");
+        cat1.setCategoryId(1L);
+        Category cat2 = new Category();
+        cat2.setName("Category 2");
+        cat2.setCategoryId(2L);
+        variable.setCategories(Arrays.asList(cat1, cat2));
+        return variable;
     }
 
     private static void assertDataSetEqualsDbModel(final DataSet actual, final DimensionalDataSet expected) {

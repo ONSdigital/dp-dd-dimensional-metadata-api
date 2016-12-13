@@ -2,9 +2,13 @@ package uk.co.onsdigital.discovery.metadata.api.service;
 
 import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
+import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
 import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
+import uk.co.onsdigital.discovery.metadata.api.model.DimensionOption;
+import uk.co.onsdigital.discovery.model.Category;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
+import uk.co.onsdigital.discovery.model.Variable;
 
 import java.util.HashSet;
 import java.util.List;
@@ -40,12 +44,23 @@ public class MetadataServiceImpl implements MetadataService {
         return convertDataSet(metadataDao.findDataSetById(dataSetId));
     }
 
-    public Set<Dimension> listDimensionsForDataSet(String dataSetId) {
-        return null;
+    public Set<Dimension> listDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException {
+        final List<Variable> variables = metadataDao.getVariablesInDataSet(dataSetId);
+        final Set<Dimension> dimensions = new HashSet<>(variables.size());
+
+        for (Variable variable : variables) {
+            Dimension dimension = convertVariableToDimension(variable);
+            if (!dimension.getOptions().isEmpty()) {
+                dimensions.add(dimension);
+            }
+        }
+
+        return dimensions;
     }
 
-    public Dimension findDimensionById(String dataSetId, String dimensionId) {
-        return null;
+    public Dimension findDimensionById(String dataSetId, String dimensionId) throws DataSetNotFoundException, DimensionNotFoundException {
+        final Variable variable = metadataDao.findVariableByDataSetAndDimensionId(dataSetId, dimensionId);
+        return convertVariableToDimension(variable);
     }
 
     private DataSet convertDataSet(final DimensionalDataSet dbDataSet) {
@@ -57,4 +72,22 @@ public class MetadataServiceImpl implements MetadataService {
         dataSet.setUrl(String.format(Locale.ROOT, DATASET_TEMPLATE, baseUrl, dbDataSet.getDimensionalDataSetId().toString()));
         return dataSet;
     }
+
+    private static Dimension convertVariableToDimension(Variable variable) {
+        final Dimension dimension = new Dimension();
+        dimension.setId(Long.toString(variable.getVariableId()));
+        dimension.setName(variable.getName());
+
+        final List<Category> categories = variable.getCategories();
+        if (categories != null) {
+            final Set<DimensionOption> options = new HashSet<>();
+            for (Category category : categories) {
+                options.add(new DimensionOption(String.valueOf(category.getCategoryId()), category.getName()));
+            }
+
+            dimension.setOptions(options);
+        }
+        return dimension;
+    }
+
 }

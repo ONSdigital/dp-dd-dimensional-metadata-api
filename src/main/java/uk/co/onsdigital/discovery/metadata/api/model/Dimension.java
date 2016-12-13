@@ -7,7 +7,25 @@ import java.util.Set;
  * Created by neil on 12/12/2016.
  */
 public class Dimension {
+    private String id;
+    private String name;
     private Set<DimensionOption> options = new HashSet<DimensionOption>();
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public Set<DimensionOption> getOptions() {
         return options;
