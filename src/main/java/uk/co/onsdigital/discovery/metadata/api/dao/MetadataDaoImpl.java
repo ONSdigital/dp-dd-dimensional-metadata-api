@@ -1,5 +1,6 @@
 package uk.co.onsdigital.discovery.metadata.api.dao;
 
+import org.springframework.stereotype.Repository;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.VariableNotFoundException;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
@@ -15,6 +16,7 @@ import java.util.UUID;
 /**
  * Implementation of the MetadataDao using JPA.
  */
+@Repository
 public class MetadataDaoImpl implements MetadataDao {
     private final EntityManager entityManager;
 

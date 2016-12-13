@@ -1,5 +1,7 @@
 package uk.co.onsdigital.discovery.metadata.api.service;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
@@ -18,13 +20,14 @@ import java.util.Set;
 /**
  * Implementation of the {@link MetadataService}.
  */
+@Service
 public class MetadataServiceImpl implements MetadataService {
     private static final String DATASET_TEMPLATE = "%s/datasets/%s";
 
     private final MetadataDao metadataDao;
     private final String baseUrl;
 
-    public MetadataServiceImpl(MetadataDao metadataDao, String baseUrl) {
+    public MetadataServiceImpl(MetadataDao metadataDao, @Value("${base.url}") String baseUrl) {
         this.metadataDao = metadataDao;
         this.baseUrl = baseUrl;
     }
