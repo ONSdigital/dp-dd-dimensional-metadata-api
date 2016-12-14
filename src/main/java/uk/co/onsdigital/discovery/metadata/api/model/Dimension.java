@@ -3,13 +3,14 @@ package uk.co.onsdigital.discovery.metadata.api.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
  * Represents metadata about a dimension of a dataset.
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class Dimension {
+public class Dimension implements Comparable<Dimension> {
     private String id;
     private String name;
     private String url;
@@ -48,28 +49,27 @@ public class Dimension {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+    public int compareTo(Dimension that) {
+        return this.name.compareTo(that.name);
+    }
 
-        Dimension dimension = (Dimension) o;
-
-        return options != null ? options.equals(dimension.options) : dimension.options == null;
+    @Override
+    public boolean equals(Object that) {
+        return this == that || that instanceof Dimension && this.compareTo((Dimension) that) == 0;
     }
 
     @Override
     public int hashCode() {
-        return options != null ? options.hashCode() : 0;
+        return Objects.hash(name);
     }
 
     @Override
     public String toString() {
         return "Dimension{" +
-                "options=" + options +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", url='" + url + '\'' +
+                ", options=" + options +
                 '}';
     }
 }

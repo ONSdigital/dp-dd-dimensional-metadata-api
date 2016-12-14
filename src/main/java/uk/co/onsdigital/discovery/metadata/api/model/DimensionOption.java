@@ -1,9 +1,11 @@
 package uk.co.onsdigital.discovery.metadata.api.model;
 
+import java.util.Objects;
+
 /**
  * A possible option for a dimension, such as <em>Male</em> or <em>Female</em> for the dimension <em>Sex</em>.
  */
-public class DimensionOption {
+public class DimensionOption implements Comparable<DimensionOption> {
     private final String id;
     private final String name;
 
@@ -21,27 +23,18 @@ public class DimensionOption {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+    public int compareTo(DimensionOption that) {
+        return this.name.compareTo(that.name);
+    }
 
-        DimensionOption that = (DimensionOption) o;
-
-        if (id != null ? !id.equals(that.id) : that.id != null) {
-            return false;
-        }
-        return name != null ? name.equals(that.name) : that.name == null;
+    @Override
+    public boolean equals(Object that) {
+        return this == that || that instanceof DimensionOption && this.compareTo((DimensionOption) that) == 0;
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        return result;
+        return Objects.hash(name);
     }
 
     @Override

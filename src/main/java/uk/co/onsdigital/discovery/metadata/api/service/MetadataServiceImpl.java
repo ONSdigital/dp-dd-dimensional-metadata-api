@@ -17,7 +17,9 @@ import uk.co.onsdigital.discovery.model.DimensionalDataSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.TreeSet;
+
+import static java.util.stream.Collectors.toCollection;
 
 /**
  * Implementation of the {@link MetadataService}.
@@ -56,7 +58,7 @@ public class MetadataServiceImpl implements MetadataService {
         return concepts.stream()
                 .filter(c -> c.getCategories() != null && !c.getCategories().isEmpty())
                 .map(c -> convertConceptSystemToDimension(c, dataSetId, false))
-                .collect(Collectors.toSet());
+                .collect(toCollection(TreeSet::new));
     }
 
     @Transactional(readOnly = true)
@@ -89,7 +91,7 @@ public class MetadataServiceImpl implements MetadataService {
         if (includeOptions) {
             final List<Category> categories = conceptSystem.getCategories();
             if (categories != null) {
-                final Set<DimensionOption> options = new HashSet<>();
+                final Set<DimensionOption> options = new TreeSet<>();
                 for (Category category : categories) {
                     options.add(new DimensionOption(String.valueOf(category.getCategoryId()), category.getName()));
                 }
