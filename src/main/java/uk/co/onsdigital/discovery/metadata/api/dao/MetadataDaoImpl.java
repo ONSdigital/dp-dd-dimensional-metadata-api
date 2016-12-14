@@ -1,16 +1,15 @@
 package uk.co.onsdigital.discovery.metadata.api.dao;
 
 import org.springframework.stereotype.Repository;
+import uk.co.onsdigital.discovery.metadata.api.exception.ConceptSystemNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
-import uk.co.onsdigital.discovery.metadata.api.exception.VariableNotFoundException;
+import uk.co.onsdigital.discovery.model.ConceptSystem;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
-import uk.co.onsdigital.discovery.model.Variable;
 
 import javax.persistence.EntityManager;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -39,21 +38,20 @@ public class MetadataDaoImpl implements MetadataDao {
     }
 
     @Override
-    public List<Variable> findVariablesInDataSet(String dataSetId) throws DataSetNotFoundException {
+    public Set<ConceptSystem> findConceptSystemsInDataSet(String dataSetId) throws DataSetNotFoundException {
         final DimensionalDataSet dataSet = findDataSetById(dataSetId);
-        final Collection<Variable> variables = dataSet.getReferencedVariables();
-        return variables == null ? Collections.emptyList() : new ArrayList<>(variables);
+        final Set<ConceptSystem> conceptSystems = dataSet.getReferencedConceptSystems();
+        return conceptSystems == null ? Collections.emptySet() : conceptSystems;
     }
 
     @Override
-    public Variable findVariableByDataSetAndVariableId(String dataSetId, String variableId)
-            throws DataSetNotFoundException, VariableNotFoundException {
-        final Long variableIdLong = Long.valueOf(variableId);
-        for (Variable variable : findVariablesInDataSet(dataSetId)) {
-            if (variableIdLong.equals(variable.getVariableId())) {
-                return variable;
-            }
-        }
-        throw new VariableNotFoundException("No such variable in dataset: " + variableId);
+    public ConceptSystem findConceptSystemByDataSetAndConceptSystemName(String dataSetId, String conceptSystemName)
+            throws DataSetNotFoundException, ConceptSystemNotFoundException {
+
+        return findConceptSystemsInDataSet(dataSetId)
+                .stream()
+                .filter(c -> conceptSystemName.equals(c.getConceptSystem()))
+                .findAny()
+                .orElseThrow(() -> new ConceptSystemNotFoundException("No such concept system in dataset: " + conceptSystemName));
     }
 }

@@ -5,15 +5,15 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
+import uk.co.onsdigital.discovery.metadata.api.exception.ConceptSystemNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
-import uk.co.onsdigital.discovery.metadata.api.exception.VariableNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
 import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
 import uk.co.onsdigital.discovery.metadata.api.model.DimensionOption;
 import uk.co.onsdigital.discovery.model.Category;
+import uk.co.onsdigital.discovery.model.ConceptSystem;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
-import uk.co.onsdigital.discovery.model.Variable;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -100,7 +100,7 @@ public class MetadataServiceTest {
 
     @Test(expectedExceptions = DataSetNotFoundException.class)
     public void shouldFailIfDataSetNotFoundForDimension() throws Exception {
-        when(mockDao.findVariableByDataSetAndVariableId(DATASET_ID, "any")).thenThrow(new DataSetNotFoundException("test"));
+        when(mockDao.findConceptSystemByDataSetAndConceptSystemName(DATASET_ID, "any")).thenThrow(new DataSetNotFoundException("test"));
 
         metadataService.findDimensionById(DATASET_ID, "any");
     }
@@ -108,7 +108,7 @@ public class MetadataServiceTest {
     @Test(expectedExceptions = DimensionNotFoundException.class)
     public void shouldFailIfDimensionNotFound() throws Exception {
         String dimensionId = "testDimension";
-        when(mockDao.findVariableByDataSetAndVariableId(DATASET_ID, dimensionId)).thenThrow(new VariableNotFoundException(dimensionId));
+        when(mockDao.findConceptSystemByDataSetAndConceptSystemName(DATASET_ID, dimensionId)).thenThrow(new ConceptSystemNotFoundException(dimensionId));
 
         metadataService.findDimensionById(DATASET_ID, dimensionId);
     }
@@ -116,31 +116,30 @@ public class MetadataServiceTest {
     @Test(expectedExceptions = DataSetNotFoundException.class)
     public void shouldFailToFindDimensionIfDataSetNotFound() throws Exception {
         String dimensionId = "testDimension";
-        when(mockDao.findVariableByDataSetAndVariableId(DATASET_ID, dimensionId)).thenThrow(new DataSetNotFoundException("test"));
+        when(mockDao.findConceptSystemByDataSetAndConceptSystemName(DATASET_ID, dimensionId)).thenThrow(new DataSetNotFoundException("test"));
 
         metadataService.findDimensionById(DATASET_ID, dimensionId);
     }
 
     @Test
-    public void shouldMapVariablesToDimensions() throws Exception {
-        Variable variable = new Variable();
-        variable.setVariableId(42L);
-        variable.setName("test name");
-        variable.setCategories(Collections.singletonList(new Category()));
-        when(mockDao.findVariablesInDataSet(DATASET_ID)).thenReturn(Collections.singletonList(variable));
+    public void shouldMapConceptSystemsToDimensions() throws Exception {
+        ConceptSystem conceptSystem = new ConceptSystem();
+        conceptSystem.setConceptSystem("NACE");
+        conceptSystem.setCategories(Collections.singletonList(new Category()));
+        when(mockDao.findConceptSystemsInDataSet(DATASET_ID)).thenReturn(Collections.singleton(conceptSystem));
 
         Set<Dimension> result = metadataService.listDimensionsForDataSet(DATASET_ID);
 
         assertThat(result).hasSize(1);
         Dimension dimension = result.iterator().next();
-        assertThat(dimension.getId()).isEqualTo("42");
-        assertThat(dimension.getName()).isEqualTo("test name");
+        assertThat(dimension.getId()).isEqualTo("NACE");
+        assertThat(dimension.getName()).isEqualTo("NACE");
     }
 
     @Test
-    public void shouldMapVariableCategoriesToDimensionOptions() throws Exception {
-        Variable variable = testVariable();
-        when(mockDao.findVariablesInDataSet(DATASET_ID)).thenReturn(Collections.singletonList(variable));
+    public void shouldMapConceptSystemCategoriesToDimensionOptions() throws Exception {
+        ConceptSystem concept = conceptSystem();
+        when(mockDao.findConceptSystemsInDataSet(DATASET_ID)).thenReturn(Collections.singleton(concept));
 
         Set<Dimension> result = metadataService.listDimensionsForDataSet(DATASET_ID);
 
@@ -152,17 +151,16 @@ public class MetadataServiceTest {
 
     @Test(expectedExceptions = DataSetNotFoundException.class)
     public void shouldFailToListDimensionsIfDataSetNotFound() throws Exception {
-        when(mockDao.findVariablesInDataSet(DATASET_ID)).thenThrow(new DataSetNotFoundException(""));
+        when(mockDao.findConceptSystemsInDataSet(DATASET_ID)).thenThrow(new DataSetNotFoundException(""));
 
         metadataService.listDimensionsForDataSet(DATASET_ID);
     }
 
     @Test
     public void shouldExcludeDimensionsWithNoOptions() throws Exception {
-        Variable variable = new Variable();
-        variable.setVariableId(42L);
-        variable.setName("test name");
-        when(mockDao.findVariablesInDataSet(DATASET_ID)).thenReturn(Collections.singletonList(variable));
+        ConceptSystem conceptSystem = new ConceptSystem();
+        conceptSystem.setConceptSystem("NACE");
+        when(mockDao.findConceptSystemsInDataSet(DATASET_ID)).thenReturn(Collections.singleton(conceptSystem));
 
         Set<Dimension> result = metadataService.listDimensionsForDataSet(DATASET_ID);
 
@@ -170,29 +168,29 @@ public class MetadataServiceTest {
     }
 
     @Test
-    public void shouldConvertVariableToDimension() throws Exception {
-        Variable variable = testVariable();
-        String dimensionId = "42";
-        when(mockDao.findVariableByDataSetAndVariableId(DATASET_ID, dimensionId)).thenReturn(variable);
+    public void shouldConvertConceptSystemToDimension() throws Exception {
+        ConceptSystem conceptSystem = conceptSystem();
+        String dimensionId = "NACE";
+        when(mockDao.findConceptSystemByDataSetAndConceptSystemName(DATASET_ID, dimensionId)).thenReturn(conceptSystem);
 
         Dimension result = metadataService.findDimensionById(DATASET_ID, dimensionId);
 
         assertThat(result.getId()).isEqualTo(dimensionId);
-        assertThat(result.getName()).isEqualTo(variable.getName());
-        assertThat(result.getOptions()).hasSize(variable.getCategories().size());
+        assertThat(result.getName()).isEqualTo(conceptSystem.getConceptSystem());
+        assertThat(result.getOptions()).hasSize(conceptSystem.getCategories().size());
     }
 
-    private static Variable testVariable() {
-        Variable variable = new Variable();
-        variable.setVariableId(42L);
+    private static ConceptSystem conceptSystem() {
+        ConceptSystem conceptSystem = new ConceptSystem();
+        conceptSystem.setConceptSystem("NACE");
         Category cat1 = new Category();
         cat1.setName("Category 1");
         cat1.setCategoryId(1L);
         Category cat2 = new Category();
         cat2.setName("Category 2");
         cat2.setCategoryId(2L);
-        variable.setCategories(Arrays.asList(cat1, cat2));
-        return variable;
+        conceptSystem.setCategories(Arrays.asList(cat1, cat2));
+        return conceptSystem;
     }
 
     private static void assertDataSetEqualsDbModel(final DataSet actual, final DimensionalDataSet expected) {

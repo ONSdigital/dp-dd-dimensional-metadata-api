@@ -10,13 +10,14 @@ import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
 import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
 import uk.co.onsdigital.discovery.metadata.api.model.DimensionOption;
 import uk.co.onsdigital.discovery.model.Category;
+import uk.co.onsdigital.discovery.model.ConceptSystem;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
-import uk.co.onsdigital.discovery.model.Variable;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the {@link MetadataService}.
@@ -52,23 +53,17 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Transactional(readOnly = true)
     public Set<Dimension> listDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException {
-        final List<Variable> variables = metadataDao.findVariablesInDataSet(dataSetId);
-        final Set<Dimension> dimensions = new HashSet<>(variables.size());
+        final Set<ConceptSystem> concepts = metadataDao.findConceptSystemsInDataSet(dataSetId);
 
-        for (Variable variable : variables) {
-            Dimension dimension = convertVariableToDimension(variable);
-            if (!dimension.getOptions().isEmpty()) {
-                dimensions.add(dimension);
-            }
-        }
-
-        return dimensions;
+        return concepts.stream().map(MetadataServiceImpl::convertConceptSystemToDimension)
+                .filter(c -> !c.getOptions().isEmpty())
+                .collect(Collectors.toSet());
     }
 
     @Transactional(readOnly = true)
     public Dimension findDimensionById(String dataSetId, String dimensionId) throws DataSetNotFoundException, DimensionNotFoundException {
-        final Variable variable = metadataDao.findVariableByDataSetAndVariableId(dataSetId, dimensionId);
-        return convertVariableToDimension(variable);
+        final ConceptSystem conceptSystem = metadataDao.findConceptSystemByDataSetAndConceptSystemName(dataSetId, dimensionId);
+        return convertConceptSystemToDimension(conceptSystem);
     }
 
     private DataSet convertDataSet(final DimensionalDataSet dbDataSet) {
@@ -81,12 +76,12 @@ public class MetadataServiceImpl implements MetadataService {
         return dataSet;
     }
 
-    private static Dimension convertVariableToDimension(Variable variable) {
+    private static Dimension convertConceptSystemToDimension(ConceptSystem conceptSystem) {
         final Dimension dimension = new Dimension();
-        dimension.setId(Long.toString(variable.getVariableId()));
-        dimension.setName(variable.getName());
+        dimension.setId(conceptSystem.getConceptSystem());
+        dimension.setName(conceptSystem.getConceptSystem());
 
-        final List<Category> categories = variable.getCategories();
+        final List<Category> categories = conceptSystem.getCategories();
         if (categories != null) {
             final Set<DimensionOption> options = new HashSet<>();
             for (Category category : categories) {

@@ -4,18 +4,20 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import uk.co.onsdigital.discovery.metadata.api.exception.ConceptSystemNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
-import uk.co.onsdigital.discovery.metadata.api.exception.VariableNotFoundException;
+import uk.co.onsdigital.discovery.model.ConceptSystem;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
-import uk.co.onsdigital.discovery.model.Variable;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -38,7 +40,7 @@ public class MetadataDaoTest {
 
     @Test
     public void shouldReturnAllDataSetsFromDatabase() throws Exception {
-        List<DimensionalDataSet> dataSets = Arrays.asList(new DimensionalDataSet(), new DimensionalDataSet());
+        List<DimensionalDataSet> dataSets = asList(new DimensionalDataSet(), new DimensionalDataSet());
 
         when(mockEntityManager.createNamedQuery("DimensionalDataSet.findAll", DimensionalDataSet.class)).thenReturn(mockQuery);
         when(mockQuery.getResultList()).thenReturn(dataSets);
@@ -69,64 +71,64 @@ public class MetadataDaoTest {
     }
 
     @Test
-    public void shouldReturnAllReferencedVariables() throws Exception {
+    public void shouldReturnAllReferencedConceptSystems() throws Exception {
         final DimensionalDataSet dataSet = mock(DimensionalDataSet.class);
         final UUID dataSetId = UUID.randomUUID();
-        final List<Variable> referencedVariables = Arrays.asList(new Variable(), new Variable());
+        final Set<ConceptSystem> referencedConcepts = new HashSet<>(asList(new ConceptSystem(), new ConceptSystem()));
 
         when(mockEntityManager.find(DimensionalDataSet.class, dataSetId)).thenReturn(dataSet);
-        when(dataSet.getReferencedVariables()).thenReturn(referencedVariables);
+        when(dataSet.getReferencedConceptSystems()).thenReturn(referencedConcepts);
 
-        final List<Variable> result = metadataDao.findVariablesInDataSet(dataSetId.toString());
+        final Set<ConceptSystem> result = metadataDao.findConceptSystemsInDataSet(dataSetId.toString());
 
-        assertThat(result).isEqualTo(referencedVariables);
+        assertThat(result).isEqualTo(referencedConcepts);
     }
 
     @Test(expectedExceptions = DataSetNotFoundException.class)
-    public void shouldFailIfDataSetNotFoundWhenFindingVariables() throws Exception {
-        metadataDao.findVariablesInDataSet(UUID.randomUUID().toString());
+    public void shouldFailIfDataSetNotFoundWhenFindingConceptSystems() throws Exception {
+        metadataDao.findConceptSystemsInDataSet(UUID.randomUUID().toString());
     }
 
     @Test
-    public void shouldReturnEmptyListIfNoVariablesInDataSet() throws Exception {
+    public void shouldReturnEmptyListIfNoConceptSystemsInDataSet() throws Exception {
         final DimensionalDataSet dataSet = mock(DimensionalDataSet.class);
         final UUID dataSetId = UUID.randomUUID();
 
         when(mockEntityManager.find(DimensionalDataSet.class, dataSetId)).thenReturn(dataSet);
-        when(dataSet.getReferencedVariables()).thenReturn(null);
+        when(dataSet.getReferencedConceptSystems()).thenReturn(null);
 
-        final List<Variable> result = metadataDao.findVariablesInDataSet(dataSetId.toString());
+        final Set<ConceptSystem> result = metadataDao.findConceptSystemsInDataSet(dataSetId.toString());
         assertThat(result).isEmpty();
     }
 
     @Test
-    public void shouldReturnMatchingVariable() throws Exception {
+    public void shouldReturnMatchingConceptSystem() throws Exception {
         final DimensionalDataSet dataSet = mock(DimensionalDataSet.class);
         final UUID dataSetId = UUID.randomUUID();
-        final Variable variable = new Variable();
-        final long variableId = 42L;
-        variable.setVariableId(variableId);
-        final List<Variable> referencedVariables = Collections.singletonList(variable);
+        final ConceptSystem conceptSystem = new ConceptSystem();
+        final String conceptSystemId = "NACE";
+        conceptSystem.setConceptSystem(conceptSystemId);
+        final Set<ConceptSystem> referencedConcepts = Collections.singleton(conceptSystem);
 
         when(mockEntityManager.find(DimensionalDataSet.class, dataSetId)).thenReturn(dataSet);
-        when(dataSet.getReferencedVariables()).thenReturn(referencedVariables);
+        when(dataSet.getReferencedConceptSystems()).thenReturn(referencedConcepts);
 
-        Variable result = metadataDao.findVariableByDataSetAndVariableId(dataSetId.toString(), Long.toString(variableId));
-        assertThat(result).isEqualTo(variable);
+        ConceptSystem result = metadataDao.findConceptSystemByDataSetAndConceptSystemName(dataSetId.toString(), conceptSystemId);
+        assertThat(result).isEqualTo(conceptSystem);
     }
 
     @Test(expectedExceptions = DataSetNotFoundException.class)
-    public void shouldFailIfDataSetNotFoundForVariable() throws Exception {
-        metadataDao.findVariableByDataSetAndVariableId(UUID.randomUUID().toString(), "42");
+    public void shouldFailIfDataSetNotFoundForConceptSystem() throws Exception {
+        metadataDao.findConceptSystemByDataSetAndConceptSystemName(UUID.randomUUID().toString(), "NACE");
     }
 
-    @Test(expectedExceptions = VariableNotFoundException.class)
-    public void shouldFailIfVariableNotFound() throws Exception {
+    @Test(expectedExceptions = ConceptSystemNotFoundException.class)
+    public void shouldFailIfConceptSystemNotFound() throws Exception {
         final UUID dataSetId = UUID.randomUUID();
         final DimensionalDataSet dataSet = mock(DimensionalDataSet.class);
         when(mockEntityManager.find(DimensionalDataSet.class, dataSetId)).thenReturn(dataSet);
-        when(dataSet.getReferencedVariables()).thenReturn(Arrays.asList(new Variable(), new Variable()));
+        when(dataSet.getReferencedConceptSystems()).thenReturn(new HashSet<>(asList(new ConceptSystem(), new ConceptSystem())));
 
-        metadataDao.findVariableByDataSetAndVariableId(dataSetId.toString(), "42");
+        metadataDao.findConceptSystemByDataSetAndConceptSystemName(dataSetId.toString(), "NACE");
     }
 }

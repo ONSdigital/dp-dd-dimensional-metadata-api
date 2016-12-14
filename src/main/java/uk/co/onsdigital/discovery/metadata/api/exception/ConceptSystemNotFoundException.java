@@ -5,8 +5,8 @@ package uk.co.onsdigital.discovery.metadata.api.exception;
  * was not found in the database. A <em>Variable</em> in the data layer is equivalent to a <em>Dimension</em> at the API
  * layer.
  */
-public class VariableNotFoundException extends DimensionNotFoundException {
-    public VariableNotFoundException(String message) {
+public class ConceptSystemNotFoundException extends DimensionNotFoundException {
+    public ConceptSystemNotFoundException(String message) {
         super(message);
     }
 }

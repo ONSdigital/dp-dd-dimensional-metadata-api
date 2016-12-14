@@ -1,11 +1,12 @@
 package uk.co.onsdigital.discovery.metadata.api.dao;
 
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
-import uk.co.onsdigital.discovery.metadata.api.exception.VariableNotFoundException;
+import uk.co.onsdigital.discovery.metadata.api.exception.ConceptSystemNotFoundException;
+import uk.co.onsdigital.discovery.model.ConceptSystem;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
-import uk.co.onsdigital.discovery.model.Variable;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Data Access Object for retrieving metadata from the data discovery database.
@@ -27,23 +28,23 @@ public interface MetadataDao {
     DimensionalDataSet findDataSetById(String dataSetId) throws DataSetNotFoundException;
 
     /**
-     * Return the variables that are referenced in the given dataset.
+     * Return the concept systems (dimensions) that are referenced in the given dataset.
      *
      * @param dataSetId the id of the dataset to find variables for.
-     * @return the list of all variables that are referenced in the given dataset.
+     * @return the list of all concept systems that are referenced in the given dataset.
      * @throws DataSetNotFoundException if the dataset does not exist.
      */
-    List<Variable> findVariablesInDataSet(String dataSetId) throws DataSetNotFoundException;
+    Set<ConceptSystem> findConceptSystemsInDataSet(String dataSetId) throws DataSetNotFoundException;
 
     /**
-     * Find a given variable that is referenced in a given dataset.
+     * Find a given concept system that is referenced in a given dataset.
      *
      * @param dataSetId the id of the dataset.
-     * @param variableId the id of the variable.
-     * @return the matching variable if it exists and is referenced in the given dataset.
+     * @param conceptSystem the name of the concept system.
+     * @return the matching concept system if it exists and is referenced in the given dataset.
      * @throws DataSetNotFoundException if the dataset does not exist.
-     * @throws Variable if the variable does not exist or is not referenced in the given dataset.
+     * @throws ConceptSystemNotFoundException if the concept system does not exist or is not referenced in the given dataset.
      */
-    Variable findVariableByDataSetAndVariableId(String dataSetId, String variableId)
-            throws DataSetNotFoundException, VariableNotFoundException;
+    ConceptSystem findConceptSystemByDataSetAndConceptSystemName(String dataSetId, String conceptSystem)
+            throws DataSetNotFoundException, ConceptSystemNotFoundException;
 }
