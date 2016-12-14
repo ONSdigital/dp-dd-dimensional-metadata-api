@@ -194,7 +194,7 @@ public class MetadataServiceTest {
     private static void assertDataSetEqualsDbModel(final DataSet actual, final DimensionalDataSet expected) {
         assertThat(actual.getId()).isEqualTo(expected.getDimensionalDataSetId().toString());
         assertThat(actual.getTitle()).isEqualTo(expected.getTitle());
-        assertThat(actual.getDescription()).isEqualTo(expected.getDescription());
+        assertThat(actual.getMetadata().getDescription()).isEqualTo(expected.getDescription());
     }
 
     private DimensionalDataSet dbDataSet(UUID dataSetId, String title, String description) {
