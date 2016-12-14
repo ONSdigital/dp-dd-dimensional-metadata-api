@@ -1,14 +1,18 @@
 package uk.co.onsdigital.discovery.metadata.api.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * Represents metadata about a dimension of a dataset.
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Dimension {
     private String id;
     private String name;
+    private String url;
     private Set<DimensionOption> options = new HashSet<>();
 
     public String getId() {
@@ -25,6 +29,14 @@ public class Dimension {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public Set<DimensionOption> getOptions() {

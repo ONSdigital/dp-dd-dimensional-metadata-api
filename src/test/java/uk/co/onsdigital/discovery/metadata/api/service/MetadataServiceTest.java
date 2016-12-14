@@ -139,12 +139,10 @@ public class MetadataServiceTest {
     @Test
     public void shouldMapConceptSystemCategoriesToDimensionOptions() throws Exception {
         ConceptSystem concept = conceptSystem();
-        when(mockDao.findConceptSystemsInDataSet(DATASET_ID)).thenReturn(Collections.singleton(concept));
+        when(mockDao.findConceptSystemByDataSetAndConceptSystemName(DATASET_ID, concept.getConceptSystem())).thenReturn(concept);
 
-        Set<Dimension> result = metadataService.listDimensionsForDataSet(DATASET_ID);
+        Dimension dimension = metadataService.findDimensionById(DATASET_ID, concept.getConceptSystem());
 
-        assertThat(result).hasSize(1);
-        Dimension dimension = result.iterator().next();
         assertThat(dimension).isNotNull();
         assertThat(dimension.getOptions()).containsOnly(new DimensionOption("1", "Category 1"), new DimensionOption("2", "Category 2"));
     }

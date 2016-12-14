@@ -1,7 +1,5 @@
 package uk.co.onsdigital.discovery.metadata.api.model;
 
-import java.util.Set;
-
 /**
  * Represents metadata about a particular dataset.
  */
@@ -11,7 +9,7 @@ public class DataSet {
     private String title;
     private String url;
     private String description;
-    private Set<Dimension> dimensions;
+    private String dimensionsUrl;
 
     public String getId() {
         return id;
@@ -43,6 +41,14 @@ public class DataSet {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getDimensionsUrl() {
+        return dimensionsUrl;
+    }
+
+    public void setDimensionsUrl(String dimensionsUrl) {
+        this.dimensionsUrl = dimensionsUrl;
     }
 
     @Override
