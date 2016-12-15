@@ -1,5 +1,7 @@
 package uk.co.onsdigital.discovery.metadata.api.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,10 +28,14 @@ import static java.util.stream.Collectors.toCollection;
  */
 @Service
 public class MetadataServiceImpl implements MetadataService {
+    private static final Logger logger = LoggerFactory.getLogger(MetadataServiceImpl.class);
+
     private final MetadataDao metadataDao;
     private final String baseUrl;
 
-    public MetadataServiceImpl(MetadataDao metadataDao, @Value("${base.url}") String baseUrl) {
+    MetadataServiceImpl(MetadataDao metadataDao, @Value("#{systemEnvironment['BASE_URL'] ?: 'http://localhost:8080'}") String baseUrl) {
+        logger.info("Initialising metadata service. Base URL: {}", baseUrl);
+
         this.metadataDao = metadataDao;
         this.baseUrl = baseUrl;
     }
