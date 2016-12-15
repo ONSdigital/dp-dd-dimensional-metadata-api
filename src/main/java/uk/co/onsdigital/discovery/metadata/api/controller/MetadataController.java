@@ -7,8 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
@@ -36,25 +37,34 @@ public class MetadataController implements MetadataService {
         SpringApplication.run(MetadataController.class, args);
     }
 
-    @RequestMapping("/datasets")
+    @GetMapping("/healthcheck")
+    public boolean healthCheck() {
+        return true;
+    }
+
+    @GetMapping("/datasets")
+    @CrossOrigin
     @Override
     public Set<DataSet> listAvailableDataSets() {
         return metadataService.listAvailableDataSets();
     }
 
-    @RequestMapping("/datasets/{dataSetId}")
+    @GetMapping("/datasets/{dataSetId}")
+    @CrossOrigin
     @Override
     public DataSet findDataSetById(@PathVariable String dataSetId) throws DataSetNotFoundException {
         return metadataService.findDataSetById(dataSetId);
     }
 
-    @RequestMapping("/datasets/{dataSetId}/dimensions")
+    @GetMapping("/datasets/{dataSetId}/dimensions")
+    @CrossOrigin
     @Override
     public Set<Dimension> listDimensionsForDataSet(@PathVariable String dataSetId) throws DataSetNotFoundException {
         return metadataService.listDimensionsForDataSet(dataSetId);
     }
 
-    @RequestMapping("/datasets/{dataSetId}/dimensions/{dimensionId}")
+    @GetMapping("/datasets/{dataSetId}/dimensions/{dimensionId}")
+    @CrossOrigin
     @Override
     public Dimension findDimensionById(@PathVariable String dataSetId, @PathVariable String dimensionId)
             throws DataSetNotFoundException, DimensionNotFoundException {
