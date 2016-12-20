@@ -3,17 +3,21 @@ package uk.co.onsdigital.discovery.metadata.api.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents metadata about a particular dataset.
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class DataSet {
 
     private String id;
     private String title;
     private String url;
     private Metadata metadata = new Metadata();
+    private Set<Dimension> dimensions = Collections.emptySet();
     private String dimensionsUrl;
 
     public String getId() {
@@ -59,6 +63,14 @@ public class DataSet {
 
     public void setDimensionsUrl(String dimensionsUrl) {
         this.dimensionsUrl = dimensionsUrl;
+    }
+
+    public Set<Dimension> getDimensions() {
+        return dimensions;
+    }
+
+    public void setDimensions(Set<Dimension> dimensions) {
+        this.dimensions = dimensions;
     }
 
     @Override

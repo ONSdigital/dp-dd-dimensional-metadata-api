@@ -2,7 +2,7 @@ package uk.co.onsdigital.discovery.metadata.api.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -14,7 +14,7 @@ public class Dimension implements Comparable<Dimension> {
     private String id;
     private String name;
     private String url;
-    private Set<DimensionOption> options = new HashSet<>();
+    private Set<DimensionOption> options = Collections.emptySet();
 
     public String getId() {
         return id;
@@ -50,7 +50,7 @@ public class Dimension implements Comparable<Dimension> {
 
     @Override
     public int compareTo(Dimension that) {
-        return this.name.compareTo(that.name);
+        return Objects.compare(this.name, that.name, String.CASE_INSENSITIVE_ORDER);
     }
 
     @Override

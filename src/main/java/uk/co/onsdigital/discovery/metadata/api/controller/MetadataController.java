@@ -7,6 +7,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -20,6 +21,7 @@ import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundExceptio
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
 import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
+import uk.co.onsdigital.discovery.metadata.api.model.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.service.MetadataService;
 
 import javax.persistence.EntityManager;
@@ -29,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static java.lang.Math.max;
 import static java.util.Arrays.asList;
 
 /**
@@ -37,7 +40,7 @@ import static java.util.Arrays.asList;
 @RestController
 @SpringBootApplication
 @ComponentScan(basePackages = "uk.co.onsdigital.discovery.metadata.api")
-public class MetadataController implements MetadataService {
+public class MetadataController {
     private static final Logger logger = LoggerFactory.getLogger(MetadataController.class);
 
     @Autowired
@@ -54,28 +57,25 @@ public class MetadataController implements MetadataService {
 
     @GetMapping("/datasets")
     @CrossOrigin
-    @Override
-    public Set<DataSet> listAvailableDataSets() {
-        return metadataService.listAvailableDataSets();
+    public ResultPage<DataSet> listAvailableDataSets(Pageable pageable) {
+        // Ensure pageNumber and pageSize are both at least 1
+        return metadataService.listAvailableDataSets(max(pageable.getPageNumber(), 1), max(pageable.getPageSize(), 1));
     }
 
     @GetMapping("/datasets/{dataSetId}")
     @CrossOrigin
-    @Override
     public DataSet findDataSetById(@PathVariable String dataSetId) throws DataSetNotFoundException {
         return metadataService.findDataSetById(dataSetId);
     }
 
     @GetMapping("/datasets/{dataSetId}/dimensions")
     @CrossOrigin
-    @Override
     public Set<Dimension> listDimensionsForDataSet(@PathVariable String dataSetId) throws DataSetNotFoundException {
         return metadataService.listDimensionsForDataSet(dataSetId);
     }
 
     @GetMapping("/datasets/{dataSetId}/dimensions/{dimensionId}")
     @CrossOrigin
-    @Override
     public Dimension findDimensionById(@PathVariable String dataSetId, @PathVariable String dimensionId)
             throws DataSetNotFoundException, DimensionNotFoundException {
         return metadataService.findDimensionById(dataSetId, dimensionId);

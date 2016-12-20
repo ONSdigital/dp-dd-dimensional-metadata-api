@@ -24,8 +24,15 @@ public class MetadataDaoImpl implements MetadataDao {
     }
 
     @Override
-    public List<DimensionalDataSet> findAllDataSets() {
-        return entityManager.createNamedQuery("DimensionalDataSet.findAll", DimensionalDataSet.class).getResultList();
+    public long countDataSets() {
+        return entityManager.createNamedQuery("DimensionalDataSet.count", Long.class).getSingleResult();
+    }
+
+    @Override
+    public List<DimensionalDataSet> findDataSetsPage(int pageNumber, int pageSize) {
+        final int firstPageOffset = (pageNumber - 1) * pageSize;
+        return entityManager.createNamedQuery("DimensionalDataSet.findAll", DimensionalDataSet.class)
+                .setFirstResult(firstPageOffset).setMaxResults(pageSize).getResultList();
     }
 
     @Override

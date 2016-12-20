@@ -4,6 +4,7 @@ import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundExceptio
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
 import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
+import uk.co.onsdigital.discovery.metadata.api.model.ResultPage;
 
 import java.util.Set;
 
@@ -13,11 +14,13 @@ import java.util.Set;
 public interface MetadataService {
 
     /**
-     * List all datasets defined in the database.
+     * Return a page of datasets defined in the database.
      *
+     * @param pageNumber the number of the page to return, starting at 1.
+     * @param pageSize the number of datasets to include in each page.
      * @return all available datasets.
      */
-    Set<DataSet> listAvailableDataSets();
+    ResultPage<DataSet> listAvailableDataSets(int pageNumber, int pageSize);
 
     /**
      * Find a particular dataset by id.
