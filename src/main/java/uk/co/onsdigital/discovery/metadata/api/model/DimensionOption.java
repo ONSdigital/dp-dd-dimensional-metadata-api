@@ -24,7 +24,7 @@ public class DimensionOption implements Comparable<DimensionOption> {
 
     @Override
     public int compareTo(DimensionOption that) {
-        return this.name.compareTo(that.name);
+        return Objects.compare(this.name, that.name, String.CASE_INSENSITIVE_ORDER);
     }
 
     @Override

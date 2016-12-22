@@ -12,12 +12,22 @@ import java.util.Set;
  * Data Access Object for retrieving metadata from the data discovery database.
  */
 public interface MetadataDao {
+
     /**
-     * Find all datasets present in the database.
+     * Return the number of all datasets present in the database.
      *
-     * @return a list of all available datasets.
+     * @return the number of datasets in the database.
      */
-    List<DimensionalDataSet> findAllDataSets();
+    long countDataSets();
+
+    /**
+     * Find a page of available datasets present in the database.
+     *
+     * @param pageNumber the number of the page to get, starting from 1.
+     * @param pageSize the number of results to include in a page.
+     * @return a list of available datasets for the given pageNumber and pageSize.
+     */
+    List<DimensionalDataSet> findDataSetsPage(int pageNumber, int pageSize);
 
     /**
      * Find a particular dataset by id.

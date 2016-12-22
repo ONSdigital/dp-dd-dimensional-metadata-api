@@ -43,9 +43,11 @@ public class MetadataDaoTest {
         List<DimensionalDataSet> dataSets = asList(new DimensionalDataSet(), new DimensionalDataSet());
 
         when(mockEntityManager.createNamedQuery("DimensionalDataSet.findAll", DimensionalDataSet.class)).thenReturn(mockQuery);
+        when(mockQuery.setFirstResult(0)).thenReturn(mockQuery);
+        when(mockQuery.setMaxResults(10)).thenReturn(mockQuery);
         when(mockQuery.getResultList()).thenReturn(dataSets);
 
-        List<DimensionalDataSet> result = metadataDao.findAllDataSets();
+        List<DimensionalDataSet> result = metadataDao.findDataSetsPage(1, 10);
         assertThat(result).isEqualTo(dataSets);
     }
 

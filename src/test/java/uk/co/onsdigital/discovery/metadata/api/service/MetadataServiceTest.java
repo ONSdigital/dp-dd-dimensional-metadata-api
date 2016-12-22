@@ -11,6 +11,7 @@ import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundExcept
 import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
 import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
 import uk.co.onsdigital.discovery.metadata.api.model.DimensionOption;
+import uk.co.onsdigital.discovery.metadata.api.model.ResultPage;
 import uk.co.onsdigital.discovery.model.Category;
 import uk.co.onsdigital.discovery.model.ConceptSystem;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
@@ -37,27 +38,36 @@ public class MetadataServiceTest {
     @BeforeMethod
     public void createMetadataService() {
         MockitoAnnotations.initMocks(this);
-        metadataService = new MetadataServiceImpl(mockDao, BASE_URL);
+        metadataService = new MetadataServiceImpl(mockDao, new UrlBuilder(BASE_URL));
     }
 
     @Test
     public void shouldReturnAllDataSetsDefinedInDatabase() throws Exception {
+        final int pageNumber = 3;
+        final int resultPerPage = 10;
         List<DimensionalDataSet> dbDataSets = Arrays.asList(
                 dbDataSet(UUID.randomUUID(), "test 1 title", "test 1 description"),
                 dbDataSet(UUID.randomUUID(), "test 2 title", "test 2 description"));
-        when(mockDao.findAllDataSets()).thenReturn(dbDataSets);
+        long total = 342L;
+        when(mockDao.findDataSetsPage(pageNumber, resultPerPage)).thenReturn(dbDataSets);
+        when(mockDao.countDataSets()).thenReturn(total);
 
-        Set<DataSet> result = metadataService.listAvailableDataSets();
+        ResultPage<DataSet> result = metadataService.listAvailableDataSets(pageNumber, resultPerPage);
 
         assertThat(result).isNotNull()
-                .hasSize(dbDataSets.size());
+                .hasFieldOrPropertyWithValue("total", total)
+                .hasFieldOrPropertyWithValue("count", dbDataSets.size())
+                .hasFieldOrPropertyWithValue("page", pageNumber)
+                .hasFieldOrPropertyWithValue("itemsPerPage", resultPerPage)
+                .hasFieldOrPropertyWithValue("startIndex", 20L);
+        assertThat(result.getItems()).isNotNull().hasSize(dbDataSets.size());
     }
 
     @Test
     public void shouldConstructCorrectURLs() throws Exception {
-        when(mockDao.findAllDataSets()).thenReturn(Collections.singletonList(dbDataSet(UUID.fromString(DATASET_ID), "", "")));
+        when(mockDao.findDataSetsPage(1, 5)).thenReturn(Collections.singletonList(dbDataSet(UUID.fromString(DATASET_ID), "", "")));
 
-        Set<DataSet> result = metadataService.listAvailableDataSets();
+        List<DataSet> result = metadataService.listAvailableDataSets(1, 5).getItems();
 
         assertThat(result).hasSize(1);
         assertThat(result.iterator().next().getUrl()).isEqualTo(BASE_URL + "/datasets/" + DATASET_ID);
@@ -69,9 +79,9 @@ public class MetadataServiceTest {
         String title = "test title";
         String description = "test description";
         DimensionalDataSet dbDataSet = dbDataSet(dataSetId, title, description);
-        when(mockDao.findAllDataSets()).thenReturn(Collections.singletonList(dbDataSet));
+        when(mockDao.findDataSetsPage(1, 10)).thenReturn(Collections.singletonList(dbDataSet));
 
-        Set<DataSet> result = metadataService.listAvailableDataSets();
+        List<DataSet> result = metadataService.listAvailableDataSets(1, 10).getItems();
 
         assertThat(result).hasSize(1);
         DataSet dataSet = result.iterator().next();
