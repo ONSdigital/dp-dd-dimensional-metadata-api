@@ -16,10 +16,13 @@ fi
 
 (aws s3 cp s3://$CONFIG_BUCKET/dp-dd-dimensional-metadata-api/$CONFIG_DIRECTORY/$CONFIG.asc . && gpg --decrypt $CONFIG.asc > $CONFIG) || exit $?
 
-source $CONFIG && docker run -d  \
-  --env=BASE_URL=$BASE_URL       \
-  --env=DB_DRIVER=$DB_DRIVER     \
-  --env=DB_PASSWORD=$DB_PASSWORD \
-  --env=DB_URL=$DB_URL           \
-  --env=DB_USER=$DB_USER         \
+source $CONFIG && docker run -d         \
+  --env=BASE_URL=$BASE_URL              \
+  --env=DB_DRIVER=$DB_DRIVER            \
+  --env=DB_PASSWORD=$DB_PASSWORD        \
+  --env=DB_URL=$DB_URL                  \
+  --env=DB_USER=$DB_USER                \
+  --name=dp-dd-dimensional-metadata-api \
+  --net=$DOCKER_NETWORK                 \
+  --restart=always                      \
   $ECR_REPOSITORY_URI/dp-dd-dimensional-metadata-api:$GIT_COMMIT
