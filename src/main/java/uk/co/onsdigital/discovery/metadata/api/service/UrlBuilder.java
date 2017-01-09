@@ -20,7 +20,7 @@ public class UrlBuilder {
     private final UriTemplate dimensionsTemplate;
     private final UriTemplate dimensionTemplate;
 
-    UrlBuilder(@Value("#{systemEnvironment['BASE_URL'] ?: 'http://localhost:20098'}") String baseUrl) {
+    UrlBuilder(@Value("#{systemEnvironment['BASE_URL'] ?: 'http://localhost:20099'}") String baseUrl) {
         this.baseUrl = requireNonNull(baseUrl);
 
         pageTemplate = new UriTemplate(baseUrl + "/datasets?page={page}&size={size}");
