@@ -18,9 +18,9 @@ java -jar target/dd-dimensional-metadata-api-1.0.0-SNAPSHOT.jar
 This will start the server running on port 8080 talking to a local PostgreSQL database. Use the
 following environment variables to configure the system:
 
- * `BASE_URL`: Base URL to use when constructing links to resources. Defaults to `http://localhost:20098`. NB: this
+ * `BASE_URL`: Base URL to use when constructing links to resources. Defaults to `http://localhost:20099`. NB: this
  should be the public URL that the API is available from if it is behind a load-balancer/proxy etc.
- * `SERVER_PORT`: The port to listen on. Defaults to `20098`.
+ * `SERVER_PORT`: The port to listen on. Defaults to `20099`.
  * `DB_USER`: The database username. Defaults to `data_discovery`.
  * `DB_PASSWORD`: The database password. Defaults to `password`.
  * `DB_URL`: The database JDBC URL. Defaults to `jdbc:postgresql://localhost:5432/data_discovery`.
