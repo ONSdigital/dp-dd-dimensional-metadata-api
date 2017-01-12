@@ -1,9 +1,11 @@
 package uk.co.onsdigital.discovery.metadata.api.dao;
 
-import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.ConceptSystemNotFoundException;
+import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
+import uk.co.onsdigital.discovery.metadata.api.exception.GeographicHierarchyNotFoundException;
 import uk.co.onsdigital.discovery.model.ConceptSystem;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
+import uk.co.onsdigital.discovery.model.GeographicAreaHierarchy;
 
 import java.util.List;
 import java.util.Set;
@@ -57,4 +59,16 @@ public interface MetadataDao {
      */
     ConceptSystem findConceptSystemByDataSetAndConceptSystemName(String dataSetId, String conceptSystem)
             throws DataSetNotFoundException, ConceptSystemNotFoundException;
+
+    /**
+     * Find a given geographic hierarchy that is referenced in a given dataset.
+     *
+     * @param dataSetId the id of the dataset.
+     * @param geographyId the name of the geographic hierarchy, such as {@literal 2013ADMIN}.
+     * @return the matching geographic hierarchy if it exists and is referenced in the given dataset.
+     * @throws DataSetNotFoundException if the dataset does not exist.
+     * @throws GeographicHierarchyNotFoundException if the geographic hierarchy does not exist or is not referenced in the given dataset.
+     */
+    GeographicAreaHierarchy findGeographyInDataSet(String dataSetId, String geographyId)
+            throws DataSetNotFoundException, GeographicHierarchyNotFoundException;
 }

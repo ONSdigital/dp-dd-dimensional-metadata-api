@@ -14,11 +14,14 @@ import uk.co.onsdigital.discovery.metadata.api.model.ResultPage;
 import uk.co.onsdigital.discovery.model.Category;
 import uk.co.onsdigital.discovery.model.ConceptSystem;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
+import uk.co.onsdigital.discovery.model.GeographicArea;
+import uk.co.onsdigital.discovery.model.GeographicAreaHierarchy;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toCollection;
 
@@ -59,14 +62,20 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Transactional(readOnly = true)
     public Set<Dimension> listDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException {
-        final Set<ConceptSystem> concepts = metadataDao.findConceptSystemsInDataSet(dataSetId);
-        return convertConceptSystemsToDimensions(concepts, dataSetId, true);
+        final DimensionalDataSet dataSet = metadataDao.findDataSetById(dataSetId);
+        return convertAllDimensions(dataSet, true);
     }
 
     @Transactional(readOnly = true)
     public Dimension findDimensionById(String dataSetId, String dimensionId) throws DataSetNotFoundException, DimensionNotFoundException {
-        final ConceptSystem conceptSystem = metadataDao.findConceptSystemByDataSetAndConceptSystemName(dataSetId, dimensionId);
-        return convertConceptSystemToDimension(conceptSystem, dataSetId, true);
+        try {
+            final ConceptSystem conceptSystem = metadataDao.findConceptSystemByDataSetAndConceptSystemName(dataSetId, dimensionId);
+            return convertConceptSystemToDimension(conceptSystem, dataSetId, true);
+        } catch (DimensionNotFoundException ex) {
+            // If the dimension isn't a concept, then see if it is a geographical hierarchy
+            final GeographicAreaHierarchy hierarchy = metadataDao.findGeographyInDataSet(dataSetId, dimensionId);
+            return convertGeographyToDimension(hierarchy, dataSetId, true);
+        }
     }
 
     private DataSet convertDataSet(final DimensionalDataSet dbDataSet, final boolean includeDimensions) {
@@ -81,11 +90,24 @@ public class MetadataServiceImpl implements MetadataService {
         dataSet.setDimensionsUrl(urlBuilder.dimensions(dataSet.getId()));
 
         if (includeDimensions) {
-            dataSet.setDimensions(convertConceptSystemsToDimensions(dbDataSet.getReferencedConceptSystems(),
-                    dataSet.getId(), false));
+            dataSet.setDimensions(convertAllDimensions(dbDataSet, true));
         }
 
         return dataSet;
+    }
+
+    private Set<Dimension> convertAllDimensions(final DimensionalDataSet dataSet, final boolean includeOptions) {
+        final Set<Dimension> dimensions = new TreeSet<>();
+        final String dataSetId = dataSet.getDimensionalDataSetId().toString();
+        final Set<ConceptSystem> concepts = dataSet.getReferencedConceptSystems();
+        dimensions.addAll(convertConceptSystemsToDimensions(concepts, dataSetId, includeOptions));
+
+        final Set<Dimension> geoDimensions = dataSet.getReferencedGeographies()
+                .map(g -> convertGeographyToDimension(g, dataSetId, includeOptions))
+                .collect(Collectors.toSet());
+        dimensions.addAll(geoDimensions);
+
+        return dimensions;
     }
 
     private Set<Dimension> convertConceptSystemsToDimensions(final Set<ConceptSystem> concepts, final String dataSetId,
@@ -94,6 +116,38 @@ public class MetadataServiceImpl implements MetadataService {
                 .filter(c -> c.getCategories() != null && !c.getCategories().isEmpty())
                 .map(c -> convertConceptSystemToDimension(c, dataSetId, includeOptions))
                 .collect(toCollection(TreeSet::new));
+    }
+
+    private Dimension convertGeographyToDimension(final GeographicAreaHierarchy geography,
+                                                  final String dataSetId, final boolean includeOptions) {
+        final Dimension dimension = new Dimension();
+        dimension.setId(geography.getGeographicAreaHierarchy());
+        dimension.setName(geography.getGeographicAreaHierarchy());
+        dimension.setUrl(urlBuilder.dimension(dataSetId, dimension.getId()));
+
+        if (includeOptions) {
+            if (geography.getGeographicAreas() != null) {
+                final Set<DimensionOption> options = geography.getGeographicAreas().stream()
+                        // Only convert the top-level areas in the hierarchy, as conversion will recursively fill in others
+                        .filter(area -> area.getGeographicArea() == null)
+                        .map(this::convertAreaToOption)
+                        .collect(toCollection(TreeSet::new));
+                dimension.setOptions(options);
+            }
+        }
+        return dimension;
+    }
+
+    private DimensionOption convertAreaToOption(final GeographicArea area) {
+        final DimensionOption option = new DimensionOption(area.getExtCode(), area.getName());
+        // Recursively add any child areas, if they exist. NB: currently this information won't be populated in the DB.
+        final List<GeographicArea> childAreas = area.getGeographicAreas();
+        if (childAreas != null) {
+            for (GeographicArea child : childAreas) {
+                option.addOption(convertAreaToOption(child));
+            }
+        }
+        return option;
     }
 
     private Dimension convertConceptSystemToDimension(ConceptSystem conceptSystem, String dataSetId, boolean includeOptions) {
