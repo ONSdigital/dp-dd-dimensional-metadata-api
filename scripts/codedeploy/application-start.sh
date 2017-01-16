@@ -22,6 +22,7 @@ source $CONFIG && docker run -d         \
   --env=DB_PASSWORD=$DB_PASSWORD        \
   --env=DB_URL=$DB_URL                  \
   --env=DB_USER=$DB_USER                \
+  --env=SERVER_PORT=$SERVER_PORT        \
   --name=dp-dd-dimensional-metadata-api \
   --net=$DOCKER_NETWORK                 \
   --restart=always                      \
