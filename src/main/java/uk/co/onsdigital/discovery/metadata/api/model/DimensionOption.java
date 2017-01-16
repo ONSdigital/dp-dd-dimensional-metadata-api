@@ -1,6 +1,13 @@
 package uk.co.onsdigital.discovery.metadata.api.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Ordering;
+
 import java.util.Objects;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * A possible option for a dimension, such as <em>Male</em> or <em>Female</em> for the dimension <em>Sex</em>.
@@ -8,6 +15,7 @@ import java.util.Objects;
 public class DimensionOption implements Comparable<DimensionOption> {
     private final String id;
     private final String name;
+    private final SortedSet<DimensionOption> options = new TreeSet<>();
 
     public DimensionOption(String id, String name) {
         this.id = id;
@@ -22,9 +30,22 @@ public class DimensionOption implements Comparable<DimensionOption> {
         return name;
     }
 
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public Set<DimensionOption> getOptions() {
+        return options;
+    }
+
+    public void addOption(DimensionOption option) {
+        this.options.add(option);
+    }
+
     @Override
     public int compareTo(DimensionOption that) {
-        return Objects.compare(this.name, that.name, String.CASE_INSENSITIVE_ORDER);
+        return ComparisonChain.start()
+                .compare(this.id, that.id, String.CASE_INSENSITIVE_ORDER)
+                .compare(this.name, that.name, String.CASE_INSENSITIVE_ORDER)
+                .compare(this.options, that.options, Ordering.natural().lexicographical())
+                .result();
     }
 
     @Override
@@ -42,6 +63,7 @@ public class DimensionOption implements Comparable<DimensionOption> {
         return "DimensionOption{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
+                ", options=" + options +
                 '}';
     }
 }

@@ -3,12 +3,15 @@ package uk.co.onsdigital.discovery.metadata.api.dao;
 import org.springframework.stereotype.Repository;
 import uk.co.onsdigital.discovery.metadata.api.exception.ConceptSystemNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
+import uk.co.onsdigital.discovery.metadata.api.exception.GeographicHierarchyNotFoundException;
 import uk.co.onsdigital.discovery.model.ConceptSystem;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
+import uk.co.onsdigital.discovery.model.GeographicAreaHierarchy;
 
 import javax.persistence.EntityManager;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -60,5 +63,18 @@ public class MetadataDaoImpl implements MetadataDao {
                 .filter(c -> conceptSystemName.equals(c.getConceptSystem()))
                 .findAny()
                 .orElseThrow(() -> new ConceptSystemNotFoundException("No such concept system in dataset: " + conceptSystemName));
+    }
+
+    @Override
+    public GeographicAreaHierarchy findGeographyInDataSet(String dataSetId, String geographyId)
+            throws DataSetNotFoundException, GeographicHierarchyNotFoundException {
+
+        // FIXME: this is a provisional inefficient implementation for the current prototype.
+        // At some point the metadata database will be redesigned to not store data points, at which point this should be optimised.
+        final DimensionalDataSet dataSet = findDataSetById(dataSetId);
+        return dataSet.getReferencedGeographies()
+                .filter(geog -> Objects.equals(geog.getGeographicAreaHierarchy(), geographyId))
+                .findAny()
+                .orElseThrow(() -> new GeographicHierarchyNotFoundException(geographyId));
     }
 }
