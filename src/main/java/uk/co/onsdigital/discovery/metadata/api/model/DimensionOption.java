@@ -41,6 +41,7 @@ public class DimensionOption implements Comparable<DimensionOption> {
 
     @Override
     public int compareTo(DimensionOption that) {
+        // Note: we only really need to compare IDs here, but compare everything to simplify unit test comparisons.
         return ComparisonChain.start()
                 .compare(this.id, that.id, String.CASE_INSENSITIVE_ORDER)
                 .compare(this.name, that.name, String.CASE_INSENSITIVE_ORDER)

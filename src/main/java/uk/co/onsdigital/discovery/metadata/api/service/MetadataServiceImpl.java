@@ -49,7 +49,7 @@ public class MetadataServiceImpl implements MetadataService {
         final List<DataSet> resultDataSets = new ArrayList<>(dbDataSets.size());
 
         for (DimensionalDataSet dbDataSet : dbDataSets) {
-            resultDataSets.add(convertDataSet(dbDataSet, false));
+            resultDataSets.add(convertDataSet(dbDataSet, false, false));
         }
 
         return new ResultPage<>(urlBuilder.datasetsPage(pageSize), resultDataSets, totalDataSets, pageNumber, pageSize);
@@ -57,7 +57,7 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Transactional(readOnly = true)
     public DataSet findDataSetById(String dataSetId) throws DataSetNotFoundException {
-        return convertDataSet(metadataDao.findDataSetById(dataSetId), true);
+        return convertDataSet(metadataDao.findDataSetById(dataSetId), true, false);
     }
 
     @Transactional(readOnly = true)
@@ -78,7 +78,7 @@ public class MetadataServiceImpl implements MetadataService {
         }
     }
 
-    private DataSet convertDataSet(final DimensionalDataSet dbDataSet, final boolean includeDimensions) {
+    private DataSet convertDataSet(final DimensionalDataSet dbDataSet, final boolean includeDimensions, final boolean includeOptions) {
         final DataSet dataSet = new DataSet();
         dataSet.setId(dbDataSet.getDimensionalDataSetId().toString());
         dataSet.setS3URL(dbDataSet.getS3URL());
@@ -90,7 +90,7 @@ public class MetadataServiceImpl implements MetadataService {
         dataSet.setDimensionsUrl(urlBuilder.dimensions(dataSet.getId()));
 
         if (includeDimensions) {
-            dataSet.setDimensions(convertAllDimensions(dbDataSet, true));
+            dataSet.setDimensions(convertAllDimensions(dbDataSet, includeOptions));
         }
 
         return dataSet;
@@ -120,54 +120,80 @@ public class MetadataServiceImpl implements MetadataService {
 
     private Dimension convertGeographyToDimension(final GeographicAreaHierarchy geography,
                                                   final String dataSetId, final boolean includeOptions) {
-        final Dimension dimension = new Dimension();
-        dimension.setId(geography.getGeographicAreaHierarchy());
-        dimension.setName(geography.getGeographicAreaHierarchy());
-        dimension.setUrl(urlBuilder.dimension(dataSetId, dimension.getId()));
+        return DimensionBuilder.fromGeographicHierarchy(geography)
+                .withUrl(urlBuilder.dimension(dataSetId, geography.getGeographicAreaHierarchy()))
+                .withAreas(includeOptions ? geography.getGeographicAreas() : null)
+                .build();
+    }
 
-        if (includeOptions) {
-            if (geography.getGeographicAreas() != null) {
-                final Set<DimensionOption> options = geography.getGeographicAreas().stream()
-                        // Only convert the top-level areas in the hierarchy, as conversion will recursively fill in others
-                        .filter(area -> area.getGeographicArea() == null)
-                        .map(this::convertAreaToOption)
+
+    private Dimension convertConceptSystemToDimension(ConceptSystem conceptSystem, String dataSetId, boolean includeOptions) {
+        return DimensionBuilder.fromConceptSystem(conceptSystem)
+                .withUrl(urlBuilder.dimension(dataSetId, conceptSystem.getConceptSystem()))
+                .withCategories(includeOptions ? conceptSystem.getCategories() : null)
+                .build();
+    }
+
+    /**
+     * Builder class for dimensions.
+     */
+    static class DimensionBuilder {
+        private final Dimension dimension = new Dimension();
+
+        static DimensionBuilder fromConceptSystem(ConceptSystem conceptSystem) {
+            DimensionBuilder builder = new DimensionBuilder();
+            builder.dimension.setId(conceptSystem.getConceptSystem());
+            builder.dimension.setName(conceptSystem.getConceptSystem());
+            return builder;
+        }
+
+        static DimensionBuilder fromGeographicHierarchy(GeographicAreaHierarchy geographicAreaHierarchy) {
+            DimensionBuilder builder = new DimensionBuilder();
+            builder.dimension.setId(geographicAreaHierarchy.getGeographicAreaHierarchy());
+            builder.dimension.setName(geographicAreaHierarchy.getGeographicAreaHierarchy());
+            return builder;
+        }
+
+        DimensionBuilder withUrl(String url) {
+            dimension.setUrl(url);
+            return this;
+        }
+
+        DimensionBuilder withCategories(List<Category> categories) {
+            if (categories != null) {
+                final Set<DimensionOption> options = categories.stream()
+                        .map(category -> new DimensionOption(String.valueOf(category.getCategoryId()), category.getName()))
                         .collect(toCollection(TreeSet::new));
                 dimension.setOptions(options);
             }
+            return this;
         }
-        return dimension;
-    }
 
-    private DimensionOption convertAreaToOption(final GeographicArea area) {
-        final DimensionOption option = new DimensionOption(area.getExtCode(), area.getName());
-        // Recursively add any child areas, if they exist. NB: currently this information won't be populated in the DB.
-        final List<GeographicArea> childAreas = area.getGeographicAreas();
-        if (childAreas != null) {
-            for (GeographicArea child : childAreas) {
-                option.addOption(convertAreaToOption(child));
-            }
-        }
-        return option;
-    }
-
-    private Dimension convertConceptSystemToDimension(ConceptSystem conceptSystem, String dataSetId, boolean includeOptions) {
-        final Dimension dimension = new Dimension();
-        dimension.setId(conceptSystem.getConceptSystem());
-        dimension.setName(conceptSystem.getConceptSystem());
-        dimension.setUrl(urlBuilder.dimension(dataSetId, dimension.getId()));
-
-        if (includeOptions) {
-            final List<Category> categories = conceptSystem.getCategories();
-            if (categories != null) {
-                final Set<DimensionOption> options = new TreeSet<>();
-                for (Category category : categories) {
-                    options.add(new DimensionOption(String.valueOf(category.getCategoryId()), category.getName()));
-                }
-
+        DimensionBuilder withAreas(List<GeographicArea> areas) {
+            if (areas != null) {
+                final Set<DimensionOption> options = areas.stream()
+                        .filter(area -> area.getGeographicArea() == null) // Only top-level areas, others via recursion
+                        .map(this::convertAreaToOption)
+                        .collect(Collectors.toCollection(TreeSet::new));
                 dimension.setOptions(options);
             }
+            return this;
         }
-        return dimension;
-    }
 
+        private DimensionOption convertAreaToOption(final GeographicArea area) {
+            final DimensionOption option = new DimensionOption(area.getExtCode(), area.getName());
+            // Recursively add any child areas, if they exist. NB: currently this information won't be populated in the DB.
+            final List<GeographicArea> childAreas = area.getGeographicAreas();
+            if (childAreas != null) {
+                for (GeographicArea child : childAreas) {
+                    option.addOption(convertAreaToOption(child));
+                }
+            }
+            return option;
+        }
+
+        Dimension build() {
+            return dimension;
+        }
+    }
 }
