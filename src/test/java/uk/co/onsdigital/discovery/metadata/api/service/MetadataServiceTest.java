@@ -44,7 +44,7 @@ public class MetadataServiceTest {
     @BeforeMethod
     public void createMetadataService() {
         MockitoAnnotations.initMocks(this);
-        metadataService = new MetadataServiceImpl(mockDao, new UrlBuilder(BASE_URL));
+        metadataService = new MetadataServiceImpl(mockDao, new UrlBuilder(BASE_URL), true);
     }
 
     @Test
