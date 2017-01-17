@@ -25,6 +25,7 @@ following environment variables to configure the system:
  * `DB_PASSWORD`: The database password. Defaults to `password`.
  * `DB_URL`: The database JDBC URL. Defaults to `jdbc:postgresql://localhost:5432/data_discovery`.
  * `DB_DRIVER`: The JDBC driver to load. Defaults to `org.postgresql.Driver`.
+ * `INCLUDE_GEO_DIMENSIONS`: Whether to expose geographical hierarchies as dimensions. Defaults to `false`.
 
 ## Contributing
 

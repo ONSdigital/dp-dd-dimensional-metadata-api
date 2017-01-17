@@ -2,6 +2,7 @@ package uk.co.onsdigital.discovery.metadata.api.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
@@ -32,14 +33,19 @@ import static java.util.stream.Collectors.toCollection;
 public class MetadataServiceImpl implements MetadataService {
     private static final Logger logger = LoggerFactory.getLogger(MetadataServiceImpl.class);
 
+    /** Feature flag for whether to expose geography as dimensions. */
+    private final boolean includeGeoDimensions;
+
     private final MetadataDao metadataDao;
     private final UrlBuilder urlBuilder;
 
-    MetadataServiceImpl(MetadataDao metadataDao, UrlBuilder urlBuilder) {
+    MetadataServiceImpl(MetadataDao metadataDao, UrlBuilder urlBuilder,
+                        @Value("${include.geo.dimensions}") boolean includeGeoDimensions) {
         logger.info("Initialising metadata service. Base URL: {}", urlBuilder);
 
         this.metadataDao = metadataDao;
         this.urlBuilder = urlBuilder;
+        this.includeGeoDimensions = includeGeoDimensions;
     }
 
     @Transactional(readOnly = true)
@@ -73,8 +79,11 @@ public class MetadataServiceImpl implements MetadataService {
             return convertConceptSystemToDimension(conceptSystem, dataSetId, true);
         } catch (DimensionNotFoundException ex) {
             // If the dimension isn't a concept, then see if it is a geographical hierarchy
-            final GeographicAreaHierarchy hierarchy = metadataDao.findGeographyInDataSet(dataSetId, dimensionId);
-            return convertGeographyToDimension(hierarchy, dataSetId, true);
+            if (includeGeoDimensions) {
+                final GeographicAreaHierarchy hierarchy = metadataDao.findGeographyInDataSet(dataSetId, dimensionId);
+                return convertGeographyToDimension(hierarchy, dataSetId, true);
+            }
+            throw ex;
         }
     }
 
@@ -103,10 +112,12 @@ public class MetadataServiceImpl implements MetadataService {
         final Set<ConceptSystem> concepts = dataSet.getReferencedConceptSystems();
         dimensions.addAll(convertConceptSystemsToDimensions(concepts, dataSetId, includeOptions));
 
-        final Set<Dimension> geoDimensions = dataSet.getReferencedGeographies()
-                .map(g -> convertGeographyToDimension(g, dataSetId, includeOptions))
-                .collect(Collectors.toSet());
-        dimensions.addAll(geoDimensions);
+        if (includeGeoDimensions) {
+            final Set<Dimension> geoDimensions = dataSet.getReferencedGeographies()
+                    .map(g -> convertGeographyToDimension(g, dataSetId, includeOptions))
+                    .collect(Collectors.toSet());
+            dimensions.addAll(geoDimensions);
+        }
 
         return dimensions;
     }
