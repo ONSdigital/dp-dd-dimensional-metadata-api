@@ -81,6 +81,7 @@ public class MetadataServiceImpl implements MetadataService {
     private DataSet convertDataSet(final DimensionalDataSet dbDataSet, final boolean includeDimensions, final boolean includeOptions) {
         final DataSet dataSet = new DataSet();
         dataSet.setId(dbDataSet.getDimensionalDataSetId().toString());
+        dataSet.setTitle(dbDataSet.getTitle());
         dataSet.setS3URL(dbDataSet.getS3URL());
         dataSet.setDescription(dbDataSet.getDescription());
         if (dataSet.getMetadata().getDescription() == null) {

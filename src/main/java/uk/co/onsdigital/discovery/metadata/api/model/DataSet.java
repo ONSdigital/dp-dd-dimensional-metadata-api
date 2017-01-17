@@ -15,6 +15,7 @@ public class DataSet {
 
     private String id;
     private String s3URL;
+    private String title;
     private String url;
     private Metadata metadata = new Metadata();
     private Set<Dimension> dimensions = Collections.emptySet();
@@ -34,6 +35,14 @@ public class DataSet {
 
     public void setS3URL(String s3URL) {
         this.s3URL = s3URL;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getUrl() {
@@ -77,6 +86,7 @@ public class DataSet {
     public String toString() {
         return "DataSet{" +
                 "id='" + id + '\'' +
+                ", title='" + title + '\'' +
                 ", s3URL='" + s3URL + '\'' +
                 ", url='" + url + '\'' +
                 ", metadata=" + metadata +
