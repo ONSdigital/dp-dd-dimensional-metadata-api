@@ -2,9 +2,9 @@ package uk.co.onsdigital.discovery.metadata.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import uk.co.onsdigital.discovery.model.Metadata;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -91,35 +91,5 @@ public class DataSet {
                 ", url='" + url + '\'' +
                 ", metadata=" + metadata +
                 '}';
-    }
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class Metadata {
-        private String description;
-        private List<String> taxonomies;
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
-        }
-
-        public List<String> getTaxonomies() {
-            return taxonomies;
-        }
-
-        public void setTaxonomies(List<String> taxonomies) {
-            this.taxonomies = taxonomies;
-        }
-
-        @Override
-        public String toString() {
-            return "Metadata{" +
-                    "description='" + description + '\'' +
-                    ", taxonomies=" + taxonomies +
-                    '}';
-        }
     }
 }

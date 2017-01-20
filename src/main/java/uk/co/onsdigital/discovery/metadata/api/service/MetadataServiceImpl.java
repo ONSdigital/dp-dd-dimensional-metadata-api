@@ -92,10 +92,7 @@ public class MetadataServiceImpl implements MetadataService {
         dataSet.setId(dbDataSet.getDimensionalDataSetId().toString());
         dataSet.setTitle(dbDataSet.getTitle());
         dataSet.setS3URL(dbDataSet.getS3URL());
-        dataSet.setDescription(dbDataSet.getDescription());
-        if (dataSet.getMetadata().getDescription() == null) {
-            dataSet.setDescription("No description available.");
-        }
+        dataSet.setMetadata(dbDataSet.getMetadata());
         dataSet.setUrl(urlBuilder.dataset(dataSet.getId()));
         dataSet.setDimensionsUrl(urlBuilder.dimensions(dataSet.getId()));
 
