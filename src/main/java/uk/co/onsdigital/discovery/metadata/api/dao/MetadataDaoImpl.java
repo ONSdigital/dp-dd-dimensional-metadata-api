@@ -60,7 +60,7 @@ public class MetadataDaoImpl implements MetadataDao {
 
         return findConceptSystemsInDataSet(dataSetId)
                 .stream()
-                .filter(c -> conceptSystemName.equals(c.getConceptSystem()))
+                .filter(c -> conceptSystemName.equals(c.getId()))
                 .findAny()
                 .orElseThrow(() -> new ConceptSystemNotFoundException("No such concept system in dataset: " + conceptSystemName));
     }
@@ -73,7 +73,7 @@ public class MetadataDaoImpl implements MetadataDao {
         // At some point the metadata database will be redesigned to not store data points, at which point this should be optimised.
         final DimensionalDataSet dataSet = findDataSetById(dataSetId);
         return dataSet.getReferencedGeographies()
-                .filter(geog -> Objects.equals(geog.getGeographicAreaHierarchy(), geographyId))
+                .filter(geog -> Objects.equals(geog.getId(), geographyId))
                 .findAny()
                 .orElseThrow(() -> new GeographicHierarchyNotFoundException(geographyId));
     }
