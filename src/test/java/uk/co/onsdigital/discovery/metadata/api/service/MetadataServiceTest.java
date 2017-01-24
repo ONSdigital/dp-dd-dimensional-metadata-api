@@ -289,14 +289,12 @@ public class MetadataServiceTest {
     private static void assertDataSetEqualsDbModel(final DataSet actual, final DimensionalDataSet expected) {
         assertThat(actual.getId()).isEqualTo(expected.getDimensionalDataSetId().toString());
         assertThat(actual.getS3URL()).isEqualTo(expected.getS3URL());
-        assertThat(actual.getMetadata().getDescription()).isEqualTo(expected.getMetadata().getDescription());
     }
 
     private DimensionalDataSet dbDataSet(UUID dataSetId, String s3URL, String description) {
         DimensionalDataSet dataSet = new DimensionalDataSet();
         dataSet.setDimensionalDataSetId(dataSetId);
         dataSet.setS3URL(s3URL);
-        dataSet.getMetadata().setDescription(description);
         return dataSet;
     }
 }
