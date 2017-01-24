@@ -89,7 +89,7 @@ public class MetadataServiceImpl implements MetadataService {
 
     private DataSet convertDataSet(final DimensionalDataSet dbDataSet, final boolean includeDimensions, final boolean includeOptions) {
         final DataSet dataSet = new DataSet();
-        dataSet.setId(dbDataSet.getDimensionalDataSetId().toString());
+        dataSet.setId(dbDataSet.getId().toString());
         dataSet.setTitle(dbDataSet.getTitle());
         dataSet.setS3URL(dbDataSet.getS3URL());
         dataSet.setMetadata(dbDataSet.getMetadata());
@@ -105,7 +105,7 @@ public class MetadataServiceImpl implements MetadataService {
 
     private Set<Dimension> convertAllDimensions(final DimensionalDataSet dataSet, final boolean includeOptions) {
         final Set<Dimension> dimensions = new TreeSet<>();
-        final String dataSetId = dataSet.getDimensionalDataSetId().toString();
+        final String dataSetId = dataSet.getId().toString();
         final Set<ConceptSystem> concepts = dataSet.getReferencedConceptSystems();
         dimensions.addAll(convertConceptSystemsToDimensions(concepts, dataSetId, includeOptions));
 
@@ -130,7 +130,7 @@ public class MetadataServiceImpl implements MetadataService {
     private Dimension convertGeographyToDimension(final GeographicAreaHierarchy geography,
                                                   final String dataSetId, final boolean includeOptions) {
         return DimensionBuilder.fromGeographicHierarchy(geography)
-                .withUrl(urlBuilder.dimension(dataSetId, geography.getGeographicAreaHierarchy()))
+                .withUrl(urlBuilder.dimension(dataSetId, geography.getId()))
                 .withAreas(includeOptions ? geography.getGeographicAreas() : null)
                 .build();
     }
@@ -138,7 +138,7 @@ public class MetadataServiceImpl implements MetadataService {
 
     private Dimension convertConceptSystemToDimension(ConceptSystem conceptSystem, String dataSetId, boolean includeOptions) {
         return DimensionBuilder.fromConceptSystem(conceptSystem)
-                .withUrl(urlBuilder.dimension(dataSetId, conceptSystem.getConceptSystem()))
+                .withUrl(urlBuilder.dimension(dataSetId, conceptSystem.getId()))
                 .withCategories(includeOptions ? conceptSystem.getCategories() : null)
                 .build();
     }
@@ -151,15 +151,15 @@ public class MetadataServiceImpl implements MetadataService {
 
         static DimensionBuilder fromConceptSystem(ConceptSystem conceptSystem) {
             DimensionBuilder builder = new DimensionBuilder();
-            builder.dimension.setId(conceptSystem.getConceptSystem());
-            builder.dimension.setName(conceptSystem.getConceptSystem());
+            builder.dimension.setId(conceptSystem.getId());
+            builder.dimension.setName(conceptSystem.getId());
             return builder;
         }
 
         static DimensionBuilder fromGeographicHierarchy(GeographicAreaHierarchy geographicAreaHierarchy) {
             DimensionBuilder builder = new DimensionBuilder();
-            builder.dimension.setId(geographicAreaHierarchy.getGeographicAreaHierarchy());
-            builder.dimension.setName(geographicAreaHierarchy.getGeographicAreaHierarchy());
+            builder.dimension.setId(geographicAreaHierarchy.getId());
+            builder.dimension.setName(geographicAreaHierarchy.getId());
             return builder;
         }
 
@@ -171,7 +171,7 @@ public class MetadataServiceImpl implements MetadataService {
         DimensionBuilder withCategories(List<Category> categories) {
             if (categories != null) {
                 final Set<DimensionOption> options = categories.stream()
-                        .map(category -> new DimensionOption(String.valueOf(category.getCategoryId()), category.getName()))
+                        .map(category -> new DimensionOption(String.valueOf(category.getId()), category.getName()))
                         .collect(toCollection(TreeSet::new));
                 dimension.setOptions(options);
             }

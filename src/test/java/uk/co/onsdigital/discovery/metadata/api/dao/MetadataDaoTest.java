@@ -112,7 +112,7 @@ public class MetadataDaoTest {
         final UUID dataSetId = UUID.randomUUID();
         final ConceptSystem conceptSystem = new ConceptSystem();
         final String conceptSystemId = "NACE";
-        conceptSystem.setConceptSystem(conceptSystemId);
+        conceptSystem.setId(conceptSystemId);
         final Set<ConceptSystem> referencedConcepts = Collections.singleton(conceptSystem);
 
         when(mockEntityManager.find(DimensionalDataSet.class, dataSetId)).thenReturn(dataSet);
@@ -143,7 +143,7 @@ public class MetadataDaoTest {
         final UUID dataSetId = UUID.randomUUID();
         final String geographyName = "2013ADMIN";
         final GeographicAreaHierarchy geography = new GeographicAreaHierarchy();
-        geography.setGeographicAreaHierarchy(geographyName);
+        geography.setId(geographyName);
 
         when(mockEntityManager.find(DimensionalDataSet.class, dataSetId)).thenReturn(dataSet);
         when(dataSet.getReferencedGeographies()).thenReturn(Stream.of(geography));

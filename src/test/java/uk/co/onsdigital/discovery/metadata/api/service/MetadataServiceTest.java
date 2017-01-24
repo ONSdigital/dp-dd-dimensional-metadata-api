@@ -141,10 +141,10 @@ public class MetadataServiceTest {
     @Test
     public void shouldMapConceptSystemsToDimensions() throws Exception {
         ConceptSystem conceptSystem = new ConceptSystem();
-        conceptSystem.setConceptSystem("NACE");
+        conceptSystem.setId("NACE");
         conceptSystem.setCategories(Collections.singletonList(new Category("test")));
         DimensionalDataSet dataSet = new DimensionalDataSet();
-        dataSet.setDimensionalDataSetId(UUID.fromString(DATASET_ID));
+        dataSet.setId(UUID.fromString(DATASET_ID));
         dataSet.setReferencedConceptSystems(Collections.singleton(conceptSystem));
         when(mockDao.findDataSetById(DATASET_ID)).thenReturn(dataSet);
 
@@ -159,9 +159,9 @@ public class MetadataServiceTest {
     @Test
     public void shouldMapConceptSystemCategoriesToDimensionOptions() throws Exception {
         ConceptSystem concept = conceptSystem();
-        when(mockDao.findConceptSystemByDataSetAndConceptSystemName(DATASET_ID, concept.getConceptSystem())).thenReturn(concept);
+        when(mockDao.findConceptSystemByDataSetAndConceptSystemName(DATASET_ID, concept.getId())).thenReturn(concept);
 
-        Dimension dimension = metadataService.findDimensionById(DATASET_ID, concept.getConceptSystem());
+        Dimension dimension = metadataService.findDimensionById(DATASET_ID, concept.getId());
 
         assertThat(dimension).isNotNull();
         assertThat(dimension.getOptions()).containsOnly(new DimensionOption("1", "Category 1"), new DimensionOption("2", "Category 2"));
@@ -171,10 +171,10 @@ public class MetadataServiceTest {
     public void shouldMapGeographicHierarchiesToDimensions() throws Exception {
         String geographyName = "2013ADMIN";
         GeographicAreaHierarchy geographicAreaHierarchy = new GeographicAreaHierarchy();
-        geographicAreaHierarchy.setGeographicAreaHierarchy(geographyName);
+        geographicAreaHierarchy.setId(geographyName);
 
         DimensionalDataSet dataSet = mock(DimensionalDataSet.class);
-        when(dataSet.getDimensionalDataSetId()).thenReturn(UUID.fromString(DATASET_ID));
+        when(dataSet.getId()).thenReturn(UUID.fromString(DATASET_ID));
         when(dataSet.getReferencedConceptSystems()).thenReturn(Collections.emptySet());
         when(dataSet.getReferencedGeographies()).thenReturn(Stream.of(geographicAreaHierarchy));
 
@@ -197,11 +197,11 @@ public class MetadataServiceTest {
 
         String geographyName = "2013ADMIN";
         GeographicAreaHierarchy geographicAreaHierarchy = new GeographicAreaHierarchy();
-        geographicAreaHierarchy.setGeographicAreaHierarchy(geographyName);
+        geographicAreaHierarchy.setId(geographyName);
         geographicAreaHierarchy.setGeographicAreas(Arrays.asList(uk, england, newport, wales));
 
         DimensionalDataSet dataSet = mock(DimensionalDataSet.class);
-        when(dataSet.getDimensionalDataSetId()).thenReturn(UUID.fromString(DATASET_ID));
+        when(dataSet.getId()).thenReturn(UUID.fromString(DATASET_ID));
         when(dataSet.getReferencedConceptSystems()).thenReturn(Collections.emptySet());
         when(dataSet.getReferencedGeographies()).thenReturn(Stream.of(geographicAreaHierarchy));
 
@@ -249,10 +249,10 @@ public class MetadataServiceTest {
     @Test
     public void shouldExcludeDimensionsWithNoOptions() throws Exception {
         DimensionalDataSet dataSet = new DimensionalDataSet();
-        dataSet.setDimensionalDataSetId(UUID.fromString(DATASET_ID));
+        dataSet.setId(UUID.fromString(DATASET_ID));
         ConceptSystem conceptSystem = new ConceptSystem();
         dataSet.setReferencedConceptSystems(Collections.singleton(conceptSystem));
-        conceptSystem.setConceptSystem("NACE");
+        conceptSystem.setId("NACE");
         when(mockDao.findDataSetById(DATASET_ID)).thenReturn(dataSet);
 
         Set<Dimension> result = metadataService.listDimensionsForDataSet(DATASET_ID);
@@ -269,31 +269,31 @@ public class MetadataServiceTest {
         Dimension result = metadataService.findDimensionById(DATASET_ID, dimensionId);
 
         assertThat(result.getId()).isEqualTo(dimensionId);
-        assertThat(result.getName()).isEqualTo(conceptSystem.getConceptSystem());
+        assertThat(result.getName()).isEqualTo(conceptSystem.getId());
         assertThat(result.getOptions()).hasSize(conceptSystem.getCategories().size());
     }
 
     private static ConceptSystem conceptSystem() {
         ConceptSystem conceptSystem = new ConceptSystem();
-        conceptSystem.setConceptSystem("NACE");
+        conceptSystem.setId("NACE");
         Category cat1 = new Category();
         cat1.setName("Category 1");
-        cat1.setCategoryId(1L);
+        cat1.setId(1L);
         Category cat2 = new Category();
         cat2.setName("Category 2");
-        cat2.setCategoryId(2L);
+        cat2.setId(2L);
         conceptSystem.setCategories(Arrays.asList(cat1, cat2));
         return conceptSystem;
     }
 
     private static void assertDataSetEqualsDbModel(final DataSet actual, final DimensionalDataSet expected) {
-        assertThat(actual.getId()).isEqualTo(expected.getDimensionalDataSetId().toString());
+        assertThat(actual.getId()).isEqualTo(expected.getId().toString());
         assertThat(actual.getS3URL()).isEqualTo(expected.getS3URL());
     }
 
     private DimensionalDataSet dbDataSet(UUID dataSetId, String s3URL, String description) {
         DimensionalDataSet dataSet = new DimensionalDataSet();
-        dataSet.setDimensionalDataSetId(dataSetId);
+        dataSet.setId(dataSetId);
         dataSet.setS3URL(s3URL);
         return dataSet;
     }
