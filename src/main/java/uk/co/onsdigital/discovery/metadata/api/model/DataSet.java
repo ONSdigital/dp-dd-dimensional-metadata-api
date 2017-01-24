@@ -1,8 +1,7 @@
 package uk.co.onsdigital.discovery.metadata.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import uk.co.onsdigital.discovery.model.Metadata;
+import com.fasterxml.jackson.annotation.JsonRawValue;
 
 import java.util.Collections;
 import java.util.Set;
@@ -17,7 +16,7 @@ public class DataSet {
     private String s3URL;
     private String title;
     private String url;
-    private Metadata metadata = new Metadata();
+    private String metadata;
     private Set<Dimension> dimensions = Collections.emptySet();
     private String dimensionsUrl;
 
@@ -53,17 +52,13 @@ public class DataSet {
         this.url = url;
     }
 
-    public Metadata getMetadata() {
+    @JsonRawValue
+    public String getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(Metadata metadata) {
+    public void setMetadata(String metadata) {
         this.metadata = metadata;
-    }
-
-    @JsonIgnore
-    public void setDescription(String description) {
-        metadata.setDescription(description);
     }
 
     public String getDimensionsUrl() {
