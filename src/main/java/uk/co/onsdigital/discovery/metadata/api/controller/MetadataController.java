@@ -29,8 +29,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static java.lang.Math.max;
 import static java.util.Arrays.asList;
@@ -71,7 +71,7 @@ public class MetadataController {
 
     @GetMapping("/datasets/{dataSetId}/dimensions")
     @CrossOrigin
-    public Set<Dimension> listDimensionsForDataSet(@PathVariable String dataSetId) throws DataSetNotFoundException {
+    public List<Dimension> listDimensionsForDataSet(@PathVariable String dataSetId) throws DataSetNotFoundException {
         return metadataService.listDimensionsForDataSet(dataSetId);
     }
 

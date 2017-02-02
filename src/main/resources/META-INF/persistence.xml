@@ -11,6 +11,9 @@
         <class>uk.co.onsdigital.discovery.model.GeographicAreaHierarchy</class>
         <class>uk.co.onsdigital.discovery.model.GeographicAreaType</class>
         <class>uk.co.onsdigital.discovery.model.GeographicLevelType</class>
+        <class>uk.co.onsdigital.discovery.model.Hierarchy</class>
+        <class>uk.co.onsdigital.discovery.model.HierarchyEntry</class>
+        <class>uk.co.onsdigital.discovery.model.HierarchyLevelType</class>
         <class>uk.co.onsdigital.discovery.model.ObservationType</class>
         <class>uk.co.onsdigital.discovery.model.Population</class>
         <class>uk.co.onsdigital.discovery.model.PopulationPK</class>
@@ -24,6 +27,9 @@
         <class>uk.co.onsdigital.discovery.model.UUIDConverter</class>
         <class>uk.co.onsdigital.discovery.model.ValueDomain</class>
         <class>uk.co.onsdigital.discovery.model.Variable</class>
+
+        <class>uk.co.onsdigital.discovery.metadata.api.model.Dimension</class>
+        <class>uk.co.onsdigital.discovery.metadata.api.model.DimensionOption</class>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/data_discovery" />
@@ -34,6 +40,11 @@
             <!-- Disable the EclipseLink shared entity cache as we expect another service (the loader) to be changing
                  the database directly. -->
             <property name="eclipselink.cache.shared.default" value="false"/>
+
+            <!-- Run scripts on startup to add additional views that the API needs -->
+            <property name="javax.persistence.schema-generation.database.action" value="create"/>
+            <property name="javax.persistence.schema-generation.create-source" value="script"/>
+            <property name="javax.persistence.schema-generation.create-script-source" value="META-INF/views.sql" />
 
         </properties>
     </persistence-unit>

@@ -6,7 +6,7 @@ import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
 import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
 import uk.co.onsdigital.discovery.metadata.api.model.ResultPage;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * The metadata service provides an API for retrieving available datasets and querying them for available dimensions.
@@ -37,7 +37,7 @@ public interface MetadataService {
      * @param dataSetId the id of the dataset to list dimensions for.
      * @return the dimensions defined by that dataset.
      */
-    Set<Dimension> listDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException;
+    List<Dimension> listDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException;
 
     /**
      * Find the definition of a dimension defined on a particular dataset. The particular options for the dimension will

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * Indicates that a resource that was requested was not found in the database.
  */
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public abstract class NotFoundException extends Exception {
+public abstract class NotFoundException extends RuntimeException {
     public NotFoundException(String message) {
         super(message);
     }
