@@ -38,7 +38,12 @@ public class DimensionOption {
     private String value;
 
     @ManyToOne
-    @JoinColumn(name = "parent_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumns({
+            @JoinColumn(name = "parent_id", referencedColumnName = "hierarchy_entry_id", insertable = false, updatable = false),
+            @JoinColumn(name = "dimensional_data_set_id", referencedColumnName = "dimensional_data_set_id", insertable = false, updatable = false),
+            @JoinColumn(name = "dimension_name", referencedColumnName = "dimension_name", insertable = false, updatable = false)
+
+    })
     private DimensionOption parent;
 
     @OneToMany(mappedBy = "parent")
