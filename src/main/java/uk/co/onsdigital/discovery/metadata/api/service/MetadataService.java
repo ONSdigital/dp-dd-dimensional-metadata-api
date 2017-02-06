@@ -45,11 +45,12 @@ public interface MetadataService {
      *
      * @param dataSetId the id of the dataset.
      * @param dimensionId the id of the dimension to query.
+     * @param viewType the type of view to use for the dimension options.
      * @return the given dimension definition for the given dataset.
      * @throws DimensionNotFoundException if the dimension does not exist in this dataset.
      * @throws DataSetNotFoundException if the dataset does not exist.
      */
-    Dimension findDimensionById(String dataSetId, String dimensionId) throws DataSetNotFoundException,
+    Dimension findDimensionById(String dataSetId, String dimensionId, DimensionViewType viewType) throws DataSetNotFoundException,
             DimensionNotFoundException;
 
 }

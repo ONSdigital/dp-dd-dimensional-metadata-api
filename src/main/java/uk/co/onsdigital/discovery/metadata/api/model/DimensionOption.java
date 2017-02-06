@@ -1,83 +1,58 @@
 package uk.co.onsdigital.discovery.metadata.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import uk.co.onsdigital.discovery.model.HierarchyLevelType;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinColumns;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
-import javax.persistence.Table;
 import java.util.List;
 import java.util.UUID;
 
 /**
  * A dimension option.
  */
-@Entity
-@Table(name = "dimension_option")
 public class DimensionOption {
-    @Id
-    @Column(name = "id", columnDefinition = "uuid")
+
     private UUID id;
-
-    @ManyToOne
-    @JoinColumns({
-            @JoinColumn(name = "dimensional_data_set_id", referencedColumnName = "dimensional_data_set_id", columnDefinition = "uuid", insertable = false, updatable = false),
-            @JoinColumn(name = "dimension_name", referencedColumnName = "dimension_name", insertable = false, updatable = false)
-    })
-    private Dimension dimension;
-
-    @Column(name = "dimension_value")
-    private String value;
-
-    @ManyToOne
-    @JoinColumns({
-            @JoinColumn(name = "parent_id", referencedColumnName = "hierarchy_entry_id", insertable = false, updatable = false),
-            @JoinColumn(name = "dimensional_data_set_id", referencedColumnName = "dimensional_data_set_id", insertable = false, updatable = false),
-            @JoinColumn(name = "dimension_name", referencedColumnName = "dimension_name", insertable = false, updatable = false)
-
-    })
-    private DimensionOption parent;
-
-    @OneToMany(mappedBy = "parent")
-    @OrderBy("dimension.name")
+    private String code;
+    private String name;
+    private HierarchyLevelType levelType;
     private List<DimensionOption> children;
 
-    @ManyToOne
-    @JoinColumn(name = "level_type_id", referencedColumnName = "id", insertable = false, updatable = false)
-    private HierarchyLevelType levelType;
+    public DimensionOption(UUID id, String code, String name, HierarchyLevelType levelType, List<DimensionOption> children) {
+        this.id = id;
+        this.code = code;
+        this.name = name;
+        this.levelType = levelType;
+        this.children = children;
+    }
+
+    public DimensionOption(UUID id, String code, String name) {
+        this(id, code, name, null, null);
+    }
+
+    public DimensionOption(UUID id, String name) {
+        this(id, null, name);
+    }
 
     public UUID getId() {
         return id;
     }
 
-    public Dimension getDimension() {
-        return dimension;
+    public String getName() {
+        return name;
     }
 
-    public String getValue() {
-        return value;
-    }
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String getCode() { return code; }
 
-    @JsonIgnore
-    public DimensionOption getParent() {
-        return parent;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public HierarchyLevelType getLevelType() {
+        return levelType;
     }
 
     @JsonProperty("options")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     public List<DimensionOption> getChildren() {
         return children;
-    }
-
-    public String getLevelType() {
-        return levelType != null ? levelType.getName() : null;
     }
 }

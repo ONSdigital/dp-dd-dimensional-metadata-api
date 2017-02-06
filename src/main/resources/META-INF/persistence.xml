@@ -7,6 +7,7 @@
         <class>uk.co.onsdigital.discovery.model.DimensionalDataPoint</class>
         <class>uk.co.onsdigital.discovery.model.DimensionalDataPointPK</class>
         <class>uk.co.onsdigital.discovery.model.DimensionalDataSet</class>
+        <class>uk.co.onsdigital.discovery.model.DimensionValue</class>
         <class>uk.co.onsdigital.discovery.model.GeographicArea</class>
         <class>uk.co.onsdigital.discovery.model.GeographicAreaHierarchy</class>
         <class>uk.co.onsdigital.discovery.model.GeographicAreaType</class>
@@ -45,6 +46,10 @@
             <property name="javax.persistence.schema-generation.database.action" value="create"/>
             <property name="javax.persistence.schema-generation.create-source" value="script"/>
             <property name="javax.persistence.schema-generation.create-script-source" value="META-INF/views.sql" />
+
+            <!-- Show generated SQL -->
+            <property name="eclipselink.logging.level.sql" value="FINE"/>
+            <property name="eclipselink.logging.parameters" value="true"/>
 
         </properties>
     </persistence-unit>
