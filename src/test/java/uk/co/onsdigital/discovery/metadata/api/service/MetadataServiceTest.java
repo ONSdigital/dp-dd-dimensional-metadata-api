@@ -133,8 +133,10 @@ public class MetadataServiceTest {
         HierarchyEntry entry = new HierarchyEntry();
         entry.setName("hierarchical name");
         entry.setCode("ABC0123F");
-        entry.setHierarchy(new Hierarchy());
-        entry.getHierarchy().setType("test");
+        Hierarchy hierarchy = new Hierarchy();
+        hierarchy.setType("test");
+        dim2.setHierarchy(hierarchy);
+        entry.setHierarchy(hierarchy);
         dim2.getValues().get(0).setHierarchyEntry(entry);
 
         when(mockDao.findDimensionsForDataSet(DATASET_ID)).thenReturn(Arrays.asList(dim1, dim2));
