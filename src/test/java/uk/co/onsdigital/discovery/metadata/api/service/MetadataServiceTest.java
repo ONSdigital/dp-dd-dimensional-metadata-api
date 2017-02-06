@@ -5,14 +5,17 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
+import uk.co.onsdigital.discovery.metadata.api.dto.DataSet;
+import uk.co.onsdigital.discovery.metadata.api.dto.DimensionMetadata;
+import uk.co.onsdigital.discovery.metadata.api.dto.DimensionOption;
+import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
-import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
 import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
-import uk.co.onsdigital.discovery.metadata.api.model.DimensionOption;
-import uk.co.onsdigital.discovery.metadata.api.model.ResultPage;
 import uk.co.onsdigital.discovery.model.DimensionValue;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
+import uk.co.onsdigital.discovery.model.Hierarchy;
+import uk.co.onsdigital.discovery.model.HierarchyEntry;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -127,15 +130,32 @@ public class MetadataServiceTest {
         Dimension dim1 = new Dimension(dataSet, "dim1", new DimensionValue(dataSet.getId(), "dim1", "val1"),
                                                         new DimensionValue(dataSet.getId(), "dim1", "val2"));
         Dimension dim2 = new Dimension(dataSet, "dim2", new DimensionValue(dataSet.getId(), "dim2", "val3"));
+        HierarchyEntry entry = new HierarchyEntry();
+        entry.setName("hierarchical name");
+        entry.setCode("ABC0123F");
+        entry.setHierarchy(new Hierarchy());
+        entry.getHierarchy().setType("test");
+        dim2.getValues().get(0).setHierarchyEntry(entry);
 
         when(mockDao.findDimensionsForDataSet(DATASET_ID)).thenReturn(Arrays.asList(dim1, dim2));
 
-        List<Dimension> result = metadataService.listDimensionsForDataSet(DATASET_ID);
-        assertThat(result).containsExactly(dim1, dim2);
+        List<DimensionMetadata> result = metadataService.listDimensionsForDataSet(DATASET_ID);
+        assertThat(result).hasSize(2);
+        DimensionMetadata dimension1 = result.get(0);
+        DimensionMetadata dimension2 = result.get(1);
 
         // Check that dimension options are properly created
-        assertThat(dim1.getOptions()).containsOnly(new DimensionOption(null, "val1"), new DimensionOption(null, "val2"));
-        assertThat(dim2.getOptions()).containsOnly(new DimensionOption(null, "val3"));
+        assertThat(dimension1.getName()).isEqualTo("dim1");
+        assertThat(dimension1.getType()).isEqualTo("standard");
+        assertThat(dimension1.getUrl()).isEqualTo(BASE_URL + "/datasets/" + DATASET_ID + "/dimensions/dim1");
+        assertThat(dimension1.isHierarchical()).isFalse();
+        assertThat(dimension1.getOptions()).containsOnly(new DimensionOption(null, "val1"), new DimensionOption(null, "val2"));
+
+        assertThat(dimension2.getName()).isEqualTo("dim2");
+        assertThat(dimension2.getType()).isEqualTo("test");
+        assertThat(dimension2.getUrl()).isEqualTo(BASE_URL + "/datasets/" + DATASET_ID + "/dimensions/dim2");
+        assertThat(dimension2.isHierarchical()).isTrue();
+        assertThat(dimension2.getOptions()).containsOnly(new DimensionOption(null, entry.getCode(), entry.getName()));
     }
 
     @Test(expectedExceptions = DataSetNotFoundException.class)

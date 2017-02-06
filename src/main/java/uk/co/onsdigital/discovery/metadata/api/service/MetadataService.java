@@ -1,10 +1,10 @@
 package uk.co.onsdigital.discovery.metadata.api.service;
 
+import uk.co.onsdigital.discovery.metadata.api.dto.DataSet;
+import uk.co.onsdigital.discovery.metadata.api.dto.DimensionMetadata;
+import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
-import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
-import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
-import uk.co.onsdigital.discovery.metadata.api.model.ResultPage;
 
 import java.util.List;
 
@@ -37,7 +37,7 @@ public interface MetadataService {
      * @param dataSetId the id of the dataset to list dimensions for.
      * @return the dimensions defined by that dataset.
      */
-    List<Dimension> listDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException;
+    List<DimensionMetadata> listDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException;
 
     /**
      * Find the definition of a dimension defined on a particular dataset. The particular options for the dimension will
@@ -50,7 +50,7 @@ public interface MetadataService {
      * @throws DimensionNotFoundException if the dimension does not exist in this dataset.
      * @throws DataSetNotFoundException if the dataset does not exist.
      */
-    Dimension findDimensionById(String dataSetId, String dimensionId, DimensionViewType viewType) throws DataSetNotFoundException,
+    DimensionMetadata findDimensionById(String dataSetId, String dimensionId, DimensionViewType viewType) throws DataSetNotFoundException,
             DimensionNotFoundException;
 
 }

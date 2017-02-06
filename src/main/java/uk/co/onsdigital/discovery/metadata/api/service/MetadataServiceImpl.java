@@ -5,13 +5,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
+import uk.co.onsdigital.discovery.metadata.api.dto.DataSet;
+import uk.co.onsdigital.discovery.metadata.api.dto.DimensionMetadata;
+import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
-import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
 import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
-import uk.co.onsdigital.discovery.metadata.api.model.DimensionOption;
-import uk.co.onsdigital.discovery.metadata.api.model.ResultPage;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
+import uk.co.onsdigital.discovery.model.Hierarchy;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,16 +56,15 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     @Transactional(readOnly = true)
-    public List<Dimension> listDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException {
+    public List<DimensionMetadata> listDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException {
         return metadataDao.findDimensionsForDataSet(dataSetId).stream()
-                .map(d -> populateOptions(DimensionViewType.LIST, d))
-                .map(d -> addUrl(dataSetId, d))
+                .map(d -> convertDimension(dataSetId, d, DimensionViewType.LIST))
                 .collect(toList());
     }
 
     @Transactional(readOnly = true)
-    public Dimension findDimensionById(String dataSetId, String dimensionId, DimensionViewType viewType) throws DataSetNotFoundException, DimensionNotFoundException {
-        return populateOptions(viewType, addUrl(dataSetId, findByName(metadataDao.findDimensionsForDataSet(dataSetId), dimensionId)));
+    public DimensionMetadata findDimensionById(String dataSetId, String dimensionId, DimensionViewType viewType) throws DataSetNotFoundException, DimensionNotFoundException {
+        return convertDimension(dataSetId, findByName(metadataDao.findDimensionsForDataSet(dataSetId), dimensionId), viewType);
     }
 
     /**
@@ -84,8 +84,8 @@ public class MetadataServiceImpl implements MetadataService {
         dataSet.setDimensionsUrl(urlBuilder.dimensions(dataSet.getId()));
 
         if (includeDimensions) {
-            final List<Dimension> dimensions = metadataDao.findDimensionsForDataSet(dataSet.getId()).stream()
-                    .map(d -> addUrl(dataSet.getId(), d))
+            final List<DimensionMetadata> dimensions = metadataDao.findDimensionsForDataSet(dataSet.getId()).stream()
+                    .map(d -> convertDimension(dataSet.getId(), d, DimensionViewType.NONE))
                     .collect(toList());
             dataSet.setDimensions(dimensions);
         }
@@ -100,21 +100,16 @@ public class MetadataServiceImpl implements MetadataService {
         return dimensions.stream().filter(d -> name.equals(d.getName())).findAny().orElseThrow(() -> new DimensionNotFoundException(name));
     }
 
-    private Dimension addUrl(String dataSetId, Dimension dimension) {
-        if (dimension != null) {
-            dimension.setUrl(urlBuilder.dimension(dataSetId, dimension.getName()));
-        }
-        return dimension;
+    private DimensionMetadata convertDimension(String dataSetId, Dimension dimension, DimensionViewType viewType) {
+        Hierarchy hierarchy = dimension.getHierarchy();
+        DimensionMetadata result = new DimensionMetadata();
+
+        result.setName(dimension.getName());
+        result.setUrl(urlBuilder.dimension(dataSetId, dimension.getName()));
+        result.setHierarchical(hierarchy != null);
+        result.setType(hierarchy == null ? "standard" : hierarchy.getType());
+        result.setOptions(viewType.convertValues(dimension.getValues()));
+
+        return result;
     }
-
-    private static Dimension populateOptions(DimensionViewType viewType, Dimension dimension) {
-        if (dimension == null || dimension.getValues() == null) {
-            return dimension;
-        }
-
-        final List<DimensionOption> options = viewType.convertValues(dimension.getValues());
-        dimension.setOptions(options);
-        return dimension;
-    }
-
 }

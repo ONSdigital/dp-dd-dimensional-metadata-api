@@ -1,7 +1,5 @@
 package uk.co.onsdigital.discovery.metadata.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.annotations.VisibleForTesting;
 import uk.co.onsdigital.discovery.model.DimensionValue;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
@@ -21,7 +19,7 @@ import java.util.UUID;
 @Table(name = "dimension")
 @IdClass(Dimension.DimensionPK.class)
 @NamedQueries({
-        @NamedQuery(name = "Dimension.findByDataSetId", query = "SELECT d FROM Dimension d LEFT JOIN FETCH d.hierarchy WHERE d.dataSet.id = :dataSetId")
+        @NamedQuery(name = "Dimension.findByDataSetId", query = "SELECT d FROM Dimension d LEFT JOIN FETCH d.hierarchy WHERE d.dataSet.id = :dataSetId ORDER BY d.name")
 })
 public class Dimension {
 
@@ -45,12 +43,6 @@ public class Dimension {
     @JoinColumn(name = "hierarchy_id", referencedColumnName = "id", columnDefinition = "uuid", insertable = false, updatable = false)
     private Hierarchy hierarchy;
 
-    @Transient
-    private String url;
-
-    @Transient
-    private List<DimensionOption> options;
-
     public Dimension() {
         // Default constructor for JPA
     }
@@ -62,7 +54,6 @@ public class Dimension {
         this.values = Arrays.asList(values);
     }
 
-    @JsonIgnore
     public DimensionalDataSet getDataSet() {
         return dataSet;
     }
@@ -71,43 +62,16 @@ public class Dimension {
         return name;
     }
 
-    @JsonIgnore
     public List<DimensionValue> getValues() {
         return values;
     }
 
-    @JsonIgnore
     public Hierarchy getHierarchy() {
         return hierarchy;
     }
 
     public void setHierarchy(Hierarchy hierarchy) {
         this.hierarchy = hierarchy;
-    }
-
-    public boolean isHierarchical() {
-        return hierarchy != null;
-    }
-
-    public String getType() {
-        return hierarchy == null ? "standard" : hierarchy.getType();
-    }
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public List<DimensionOption> getOptions() {
-        return options;
-    }
-
-    public void setOptions(List<DimensionOption> options) {
-        this.options = options;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
     }
 
     /**

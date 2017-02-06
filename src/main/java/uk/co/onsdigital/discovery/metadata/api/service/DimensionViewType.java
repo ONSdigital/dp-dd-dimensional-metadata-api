@@ -1,6 +1,6 @@
 package uk.co.onsdigital.discovery.metadata.api.service;
 
-import uk.co.onsdigital.discovery.metadata.api.model.DimensionOption;
+import uk.co.onsdigital.discovery.metadata.api.dto.DimensionOption;
 import uk.co.onsdigital.discovery.model.DimensionValue;
 import uk.co.onsdigital.discovery.model.HierarchyEntry;
 
@@ -34,6 +34,15 @@ public enum DimensionViewType {
         List<DimensionOption> convertValues(List<DimensionValue> values) {
             // TODO: implement sparse hierarchy support
             throw new UnsupportedOperationException("Hierarchical dimension view not yet implemented.");
+        }
+    },
+    /**
+     * Do not render the dimension values at all.
+     */
+    NONE {
+        @Override
+        List<DimensionOption> convertValues(List<DimensionValue> values) {
+            return null;
         }
     };
 

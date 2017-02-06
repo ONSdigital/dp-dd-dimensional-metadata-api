@@ -30,7 +30,6 @@
         <class>uk.co.onsdigital.discovery.model.Variable</class>
 
         <class>uk.co.onsdigital.discovery.metadata.api.model.Dimension</class>
-        <class>uk.co.onsdigital.discovery.metadata.api.model.DimensionOption</class>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/data_discovery" />
