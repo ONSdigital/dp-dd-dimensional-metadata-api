@@ -2,6 +2,7 @@ package uk.co.onsdigital.discovery.metadata.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.common.annotations.VisibleForTesting;
 import uk.co.onsdigital.discovery.model.DimensionValue;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
 
@@ -18,6 +19,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -54,6 +56,17 @@ public class Dimension {
 
     @Transient
     private List<DimensionOption> options;
+
+    public Dimension() {
+        // Default constructor for JPA
+    }
+
+    @VisibleForTesting
+    public Dimension(DimensionalDataSet dataSet, String name, DimensionValue... values) {
+        this.dataSet = dataSet;
+        this.name = name;
+        this.values = Arrays.asList(values);
+    }
 
     @JsonIgnore
     public DimensionalDataSet getDataSet() {

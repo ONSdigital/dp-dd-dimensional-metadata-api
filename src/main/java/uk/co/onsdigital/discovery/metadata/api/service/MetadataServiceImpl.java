@@ -11,15 +11,12 @@ import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
 import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
 import uk.co.onsdigital.discovery.metadata.api.model.DimensionOption;
 import uk.co.onsdigital.discovery.metadata.api.model.ResultPage;
-import uk.co.onsdigital.discovery.model.DimensionValue;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
-import uk.co.onsdigital.discovery.model.HierarchyEntry;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -59,7 +56,7 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Transactional(readOnly = true)
     public List<Dimension> listDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException {
-        return metadataDao.findDimensionForDataSet(dataSetId).stream()
+        return metadataDao.findDimensionsForDataSet(dataSetId).stream()
                 .map(d -> populateOptions(DimensionViewType.LIST, d))
                 .map(d -> addUrl(dataSetId, d))
                 .collect(toList());
@@ -67,7 +64,7 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Transactional(readOnly = true)
     public Dimension findDimensionById(String dataSetId, String dimensionId, DimensionViewType viewType) throws DataSetNotFoundException, DimensionNotFoundException {
-        return populateOptions(viewType, addUrl(dataSetId, findByName(metadataDao.findDimensionForDataSet(dataSetId), dimensionId)));
+        return populateOptions(viewType, addUrl(dataSetId, findByName(metadataDao.findDimensionsForDataSet(dataSetId), dimensionId)));
     }
 
     /**
@@ -87,7 +84,7 @@ public class MetadataServiceImpl implements MetadataService {
         dataSet.setDimensionsUrl(urlBuilder.dimensions(dataSet.getId()));
 
         if (includeDimensions) {
-            final List<Dimension> dimensions = metadataDao.findDimensionForDataSet(dataSet.getId()).stream()
+            final List<Dimension> dimensions = metadataDao.findDimensionsForDataSet(dataSet.getId()).stream()
                     .map(d -> addUrl(dataSet.getId(), d))
                     .collect(toList());
             dataSet.setDimensions(dimensions);

@@ -55,4 +55,36 @@ public class DimensionOption {
     public List<DimensionOption> getChildren() {
         return children;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        DimensionOption that = (DimensionOption) o;
+
+        if (code != null ? !code.equals(that.code) : that.code != null) {
+            return false;
+        }
+        if (name != null ? !name.equals(that.name) : that.name != null) {
+            return false;
+        }
+        if (levelType != null ? !levelType.equals(that.levelType) : that.levelType != null) {
+            return false;
+        }
+        return children != null ? children.equals(that.children) : that.children == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = code != null ? code.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (levelType != null ? levelType.hashCode() : 0);
+        result = 31 * result + (children != null ? children.hashCode() : 0);
+        return result;
+    }
 }

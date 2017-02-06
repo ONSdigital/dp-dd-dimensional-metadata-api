@@ -35,5 +35,12 @@ public interface MetadataDao {
      */
     DimensionalDataSet findDataSetById(String dataSetId) throws DataSetNotFoundException;
 
-    List<Dimension> findDimensionForDataSet(String dataSetId) throws DataSetNotFoundException;
+    /**
+     * Load the dimensions for a given dataset.
+     *
+     * @param dataSetId the id of the dataset to load the dimensions for.
+     * @return the dimensions defined in the given dataset.
+     * @throws DataSetNotFoundException if the dataset does not exist.
+     */
+    List<Dimension> findDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException;
 }

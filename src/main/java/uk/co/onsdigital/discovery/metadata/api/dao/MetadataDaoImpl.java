@@ -5,7 +5,7 @@ import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundExceptio
 import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
 
-import javax.persistence.EntityManager;
+import javax.persistence.*;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,7 +42,7 @@ public class MetadataDaoImpl implements MetadataDao {
     }
 
     @Override
-    public List<Dimension> findDimensionForDataSet(String dataSetId) throws DataSetNotFoundException {
+    public List<Dimension> findDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException {
         return entityManager.createNamedQuery("Dimension.findByDataSetId", Dimension.class)
                 .setParameter("dataSetId", UUID.fromString(dataSetId))
                 .getResultList();
