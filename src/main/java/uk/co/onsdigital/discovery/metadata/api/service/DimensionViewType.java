@@ -4,10 +4,18 @@ import uk.co.onsdigital.discovery.metadata.api.dto.DimensionOption;
 import uk.co.onsdigital.discovery.model.DimensionValue;
 import uk.co.onsdigital.discovery.model.HierarchyEntry;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * Indicates the type of view to use when rendering dimension options: either a flat list or (sparse) hierarchy.
@@ -32,8 +40,38 @@ public enum DimensionViewType {
     HIERARCHY {
         @Override
         List<DimensionOption> convertValues(List<DimensionValue> values) {
-            // TODO: implement sparse hierarchy support
-            throw new UnsupportedOperationException("Hierarchical dimension view not yet implemented.");
+            // Map from hierarchy entry IDs to corresponding dimension value IDs
+            final Map<UUID, UUID> valueIdsByEntryId = values.stream().collect(toMap(value -> value.getHierarchyEntry().getId(), DimensionValue::getId));
+
+            // Map from dimension value IDs to the created dimension option, for de-duplication
+            final Map<UUID, DimensionOption> options = new LinkedHashMap<>();
+            // Set to collect the top-level elements in the hierarchy
+            final Set<DimensionOption> roots = new HashSet<>();
+
+            for (DimensionValue value : values) {
+                DimensionOption option = option(options, value.getId(), value.getHierarchyEntry());
+
+                // Walk up the hierarchy creating intermediate levels as required.
+                // If an entry in the hierarchy does not exist in the dataset then we create an "empty" level
+                // that exists only for structure. These empty levels have a null id.
+                for (HierarchyEntry parentEntry = value.getHierarchyEntry().getParent(); parentEntry != null; parentEntry = parentEntry.getParent()) {
+                    final UUID parentValueId = valueIdsByEntryId.get(parentEntry.getId()); // May be null
+                    final DimensionOption parent = option(options, parentValueId, parentEntry);
+                    if (!parent.getChildren().add(option)) {
+                        // Hierarchy already exists above this point
+                        break;
+                    }
+                    option = parent;
+                }
+                roots.add(option);
+            }
+
+            return new ArrayList<>(roots);
+        }
+
+        private DimensionOption option(Map<UUID, DimensionOption> options, UUID valueId, HierarchyEntry entry) {
+            options.putIfAbsent(entry.getId(), new DimensionOption(valueId, entry.getCode(), entry.getName(), entry.getLevelType(), new LinkedHashSet<>()));
+            return options.get(entry.getId());
         }
     },
     /**

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import uk.co.onsdigital.discovery.model.HierarchyLevelType;
 
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -16,9 +16,9 @@ public class DimensionOption {
     private String code;
     private String name;
     private HierarchyLevelType levelType;
-    private List<DimensionOption> children;
+    private Set<DimensionOption> children;
 
-    public DimensionOption(UUID id, String code, String name, HierarchyLevelType levelType, List<DimensionOption> children) {
+    public DimensionOption(UUID id, String code, String name, HierarchyLevelType levelType, Set<DimensionOption> children) {
         this.id = id;
         this.code = code;
         this.name = name;
@@ -34,6 +34,7 @@ public class DimensionOption {
         this(id, null, name);
     }
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public UUID getId() {
         return id;
     }
@@ -52,8 +53,14 @@ public class DimensionOption {
 
     @JsonProperty("options")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public List<DimensionOption> getChildren() {
+    public Set<DimensionOption> getChildren() {
         return children;
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    @JsonProperty(defaultValue = "false")
+    public boolean isEmpty() {
+        return id == null;
     }
 
     @Override
@@ -73,10 +80,7 @@ public class DimensionOption {
         if (name != null ? !name.equals(that.name) : that.name != null) {
             return false;
         }
-        if (levelType != null ? !levelType.equals(that.levelType) : that.levelType != null) {
-            return false;
-        }
-        return children != null ? children.equals(that.children) : that.children == null;
+        return levelType != null ? levelType.equals(that.levelType) : that.levelType == null;
     }
 
     @Override
@@ -84,7 +88,6 @@ public class DimensionOption {
         int result = code != null ? code.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (levelType != null ? levelType.hashCode() : 0);
-        result = 31 * result + (children != null ? children.hashCode() : 0);
         return result;
     }
 }
