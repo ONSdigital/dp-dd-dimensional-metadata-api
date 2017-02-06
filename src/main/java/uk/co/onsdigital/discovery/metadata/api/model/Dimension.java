@@ -5,19 +5,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.annotations.VisibleForTesting;
 import uk.co.onsdigital.discovery.model.DimensionValue;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
+import uk.co.onsdigital.discovery.model.Hierarchy;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinColumns;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +21,7 @@ import java.util.UUID;
 @Table(name = "dimension")
 @IdClass(Dimension.DimensionPK.class)
 @NamedQueries({
-        @NamedQuery(name = "Dimension.findByDataSetId", query = "SELECT d FROM Dimension d WHERE d.dataSet.id = :dataSetId")
+        @NamedQuery(name = "Dimension.findByDataSetId", query = "SELECT d FROM Dimension d LEFT JOIN FETCH d.hierarchy WHERE d.dataSet.id = :dataSetId")
 })
 public class Dimension {
 
@@ -50,6 +40,10 @@ public class Dimension {
             @JoinColumn(name = "name", referencedColumnName = "name", insertable = false, updatable = false)
     })
     private List<DimensionValue> values;
+
+    @ManyToOne
+    @JoinColumn(name = "hierarchy_id", referencedColumnName = "id", columnDefinition = "uuid", insertable = false, updatable = false)
+    private Hierarchy hierarchy;
 
     @Transient
     private String url;
@@ -80,6 +74,23 @@ public class Dimension {
     @JsonIgnore
     public List<DimensionValue> getValues() {
         return values;
+    }
+
+    @JsonIgnore
+    public Hierarchy getHierarchy() {
+        return hierarchy;
+    }
+
+    public void setHierarchy(Hierarchy hierarchy) {
+        this.hierarchy = hierarchy;
+    }
+
+    public boolean isHierarchical() {
+        return hierarchy != null;
+    }
+
+    public String getType() {
+        return hierarchy == null ? "standard" : hierarchy.getType();
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
