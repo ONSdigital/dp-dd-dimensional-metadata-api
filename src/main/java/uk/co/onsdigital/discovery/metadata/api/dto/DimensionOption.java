@@ -90,4 +90,15 @@ public class DimensionOption {
         result = 31 * result + (levelType != null ? levelType.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "DimensionOption{" +
+                "id=" + id +
+                ", code='" + code + '\'' +
+                ", name='" + name + '\'' +
+                ", levelType=" + levelType +
+                ", children=" + children +
+                '}';
+    }
 }
