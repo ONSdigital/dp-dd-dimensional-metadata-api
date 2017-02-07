@@ -85,6 +85,18 @@ public class MetadataController {
         return metadataService.findDimensionById(dataSetId, dimensionId, viewType);
     }
 
+    @GetMapping("/hierarchies")
+    @CrossOrigin
+    public List<DimensionMetadata> listHierarchies() {
+        return metadataService.listHierarchies();
+    }
+
+    @GetMapping("/hierarchies/{hierarchyId}")
+    @CrossOrigin
+    public DimensionMetadata getHierarchy(@PathVariable String hierarchyId) throws DimensionNotFoundException {
+        return metadataService.getHierarchy(hierarchyId);
+    }
+
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
     @ResponseBody
     @ExceptionHandler(IllegalArgumentException.class)
@@ -97,14 +109,6 @@ public class MetadataController {
     @ExceptionHandler(UnsupportedOperationException.class)
     public ErrorResponse onUnsupportedOperation(final UnsupportedOperationException ex) {
         return new ErrorResponse(HttpStatus.NOT_IMPLEMENTED, ex.getMessage());
-    }
-
-    @ResponseBody
-    @ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
-    @ExceptionHandler(RuntimeException.class)
-    public ErrorResponse onRuntimeException(final RuntimeException ex) {
-        logger.error("Unhandled exception: {}", ex.getMessage(), ex);
-        return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
 
     @Bean

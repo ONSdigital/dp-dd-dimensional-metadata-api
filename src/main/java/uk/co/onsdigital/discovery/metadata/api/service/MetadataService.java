@@ -53,4 +53,21 @@ public interface MetadataService {
     DimensionMetadata findDimensionById(String dataSetId, String dimensionId, DimensionViewType viewType) throws DataSetNotFoundException,
             DimensionNotFoundException;
 
+    /**
+     * Lists all hierarchies defined in the database as pseudo-dimensions.
+     *
+     * @return the list of all hierarchies.
+     */
+    List<DimensionMetadata> listHierarchies();
+
+    /**
+     * Gets the full data for a hierarchy as a psuedo-dimension. The entries in the hierarchy will be included
+     * as the options in the dimension.
+     *
+     * @param hierarchyId the id of the hierarchy.
+     * @return the hierarchy as a dimension.
+     * @throws DimensionNotFoundException if the hierarchy does not exist.
+     */
+    DimensionMetadata getHierarchy(String hierarchyId) throws DimensionNotFoundException;
+
 }

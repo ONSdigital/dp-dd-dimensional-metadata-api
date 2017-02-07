@@ -3,6 +3,8 @@ package uk.co.onsdigital.discovery.metadata.api.dao;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
+import uk.co.onsdigital.discovery.model.Hierarchy;
+import uk.co.onsdigital.discovery.model.HierarchyEntry;
 
 import java.util.List;
 
@@ -43,4 +45,19 @@ public interface MetadataDao {
      * @throws DataSetNotFoundException if the dataset does not exist.
      */
     List<Dimension> findDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException;
+
+    /**
+     * List all hierarchies defined in the database.
+     *
+     * @return the list of all hierarchies defined in the database.
+     */
+    List<Hierarchy> listAllHierarchies();
+
+    /**
+     * List all entries in a hierarchy in display order.
+     *
+     * @param hierarchyId the id of the hierarchy.
+     * @return the entries from the given hierarchy, or an empty list if it does not exist.
+     */
+    List<HierarchyEntry> findAllEntriesInHierarchy(String hierarchyId);
 }

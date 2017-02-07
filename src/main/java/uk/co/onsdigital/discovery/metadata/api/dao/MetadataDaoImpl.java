@@ -4,6 +4,8 @@ import org.springframework.stereotype.Repository;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
+import uk.co.onsdigital.discovery.model.Hierarchy;
+import uk.co.onsdigital.discovery.model.HierarchyEntry;
 
 import javax.persistence.*;
 import java.util.List;
@@ -45,6 +47,18 @@ public class MetadataDaoImpl implements MetadataDao {
     public List<Dimension> findDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException {
         return entityManager.createNamedQuery("Dimension.findByDataSetId", Dimension.class)
                 .setParameter("dataSetId", UUID.fromString(dataSetId))
+                .getResultList();
+    }
+
+    @Override
+    public List<Hierarchy> listAllHierarchies() {
+        return entityManager.createNamedQuery(Hierarchy.FIND_ALL, Hierarchy.class).getResultList();
+    }
+
+    @Override
+    public List<HierarchyEntry> findAllEntriesInHierarchy(String hierarchyId) {
+        return entityManager.createNamedQuery(HierarchyEntry.FIND_BY_HIERARCHY_ID, HierarchyEntry.class)
+                .setParameter(HierarchyEntry.HIERARCHY_ID_PARAM, hierarchyId)
                 .getResultList();
     }
 }

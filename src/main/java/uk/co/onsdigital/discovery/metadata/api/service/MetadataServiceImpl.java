@@ -4,19 +4,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
 import uk.co.onsdigital.discovery.metadata.api.dto.DataSet;
 import uk.co.onsdigital.discovery.metadata.api.dto.DimensionMetadata;
+import uk.co.onsdigital.discovery.metadata.api.dto.DimensionOption;
 import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
+import uk.co.onsdigital.discovery.model.DimensionValue;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
 import uk.co.onsdigital.discovery.model.Hierarchy;
+import uk.co.onsdigital.discovery.model.HierarchyEntry;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
 
@@ -67,6 +72,26 @@ public class MetadataServiceImpl implements MetadataService {
         return convertDimension(dataSetId, findByName(metadataDao.findDimensionsForDataSet(dataSetId), dimensionId), viewType);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<DimensionMetadata> listHierarchies() {
+        return metadataDao.listAllHierarchies().stream().map(this::convertHierarchyToDimension).collect(toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DimensionMetadata getHierarchy(String hierarchyId) throws DimensionNotFoundException {
+        final List<HierarchyEntry> entries = metadataDao.findAllEntriesInHierarchy(hierarchyId);
+        if (CollectionUtils.isEmpty(entries)) {
+            throw new DimensionNotFoundException("No such hierarchy: " + hierarchyId);
+        }
+
+        final DimensionMetadata dimension = convertHierarchyToDimension(entries.get(0).getHierarchy());
+        final List<DimensionOption> options = convertHierarchyEntries(entries);
+        dimension.setOptions(options);
+        return dimension;
+    }
+
     /**
      * Converts a dataset from the database into an API {@link DataSet} object.
      *
@@ -112,4 +137,27 @@ public class MetadataServiceImpl implements MetadataService {
 
         return result;
     }
+
+    private DimensionMetadata convertHierarchyToDimension(Hierarchy hierarchy) {
+        final DimensionMetadata dimension = new DimensionMetadata();
+        dimension.setId(hierarchy.getId());
+        dimension.setName(hierarchy.getName());
+        dimension.setType(hierarchy.getType());
+        dimension.setHierarchical(true);
+        dimension.setUrl(urlBuilder.hierarchy(hierarchy.getId()));
+
+        return dimension;
+    }
+
+    private List<DimensionOption> convertHierarchyEntries(Collection<HierarchyEntry> entries) {
+        return DimensionViewType.HIERARCHY.convertValues(entries.stream().map(this::valueFromHierarchyEntry).collect(toList()));
+    }
+
+    private DimensionValue valueFromHierarchyEntry(final HierarchyEntry entry) {
+        final DimensionValue value = new DimensionValue();
+        value.setId(UUID.randomUUID());
+        value.setHierarchyEntry(entry);
+        return value;
+    }
+
 }

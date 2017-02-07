@@ -9,11 +9,21 @@ import java.util.List;
  */
 public class DimensionMetadata {
 
+    private String id;
     private String name;
     private String url;
     private String type;
     private boolean hierarchical;
     private List<DimensionOption> options;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
