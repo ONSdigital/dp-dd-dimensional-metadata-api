@@ -1,12 +1,12 @@
 package uk.co.onsdigital.discovery.metadata.api.service;
 
+import uk.co.onsdigital.discovery.metadata.api.dto.DataSet;
+import uk.co.onsdigital.discovery.metadata.api.dto.DimensionMetadata;
+import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
-import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
-import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
-import uk.co.onsdigital.discovery.metadata.api.model.ResultPage;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * The metadata service provides an API for retrieving available datasets and querying them for available dimensions.
@@ -37,7 +37,7 @@ public interface MetadataService {
      * @param dataSetId the id of the dataset to list dimensions for.
      * @return the dimensions defined by that dataset.
      */
-    Set<Dimension> listDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException;
+    List<DimensionMetadata> listDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException;
 
     /**
      * Find the definition of a dimension defined on a particular dataset. The particular options for the dimension will
@@ -45,11 +45,12 @@ public interface MetadataService {
      *
      * @param dataSetId the id of the dataset.
      * @param dimensionId the id of the dimension to query.
+     * @param viewType the type of view to use for the dimension options.
      * @return the given dimension definition for the given dataset.
      * @throws DimensionNotFoundException if the dimension does not exist in this dataset.
      * @throws DataSetNotFoundException if the dataset does not exist.
      */
-    Dimension findDimensionById(String dataSetId, String dimensionId) throws DataSetNotFoundException,
+    DimensionMetadata findDimensionById(String dataSetId, String dimensionId, DimensionViewType viewType) throws DataSetNotFoundException,
             DimensionNotFoundException;
 
 }

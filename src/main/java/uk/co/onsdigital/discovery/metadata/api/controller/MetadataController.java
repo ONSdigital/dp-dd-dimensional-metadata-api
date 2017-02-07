@@ -15,22 +15,23 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.annotation.RequestScope;
+import uk.co.onsdigital.discovery.metadata.api.dto.DataSet;
+import uk.co.onsdigital.discovery.metadata.api.dto.DimensionMetadata;
+import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
-import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
-import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
-import uk.co.onsdigital.discovery.metadata.api.model.ResultPage;
+import uk.co.onsdigital.discovery.metadata.api.service.DimensionViewType;
 import uk.co.onsdigital.discovery.metadata.api.service.MetadataService;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
+import javax.persistence.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static java.lang.Math.max;
 import static java.util.Arrays.asList;
@@ -71,21 +72,38 @@ public class MetadataController {
 
     @GetMapping("/datasets/{dataSetId}/dimensions")
     @CrossOrigin
-    public Set<Dimension> listDimensionsForDataSet(@PathVariable String dataSetId) throws DataSetNotFoundException {
+    public List<DimensionMetadata> listDimensionsForDataSet(@PathVariable String dataSetId) throws DataSetNotFoundException {
         return metadataService.listDimensionsForDataSet(dataSetId);
     }
 
     @GetMapping("/datasets/{dataSetId}/dimensions/{dimensionId}")
     @CrossOrigin
-    public Dimension findDimensionById(@PathVariable String dataSetId, @PathVariable String dimensionId)
+    public DimensionMetadata findDimensionById(@PathVariable String dataSetId, @PathVariable String dimensionId,
+                                               @RequestParam(name = "view", defaultValue = "list") String view)
             throws DataSetNotFoundException, DimensionNotFoundException {
-        return metadataService.findDimensionById(dataSetId, dimensionId);
+        final DimensionViewType viewType = DimensionViewType.valueOf(view.toUpperCase());
+        return metadataService.findDimensionById(dataSetId, dimensionId, viewType);
     }
 
-    @ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "Invalid DataSet ID")
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+    @ResponseBody
     @ExceptionHandler(IllegalArgumentException.class)
-    public void onIllegalArgumentException(final IllegalArgumentException ex) {
-        // Do nothing
+    public ErrorResponse onIllegalArgumentException(final IllegalArgumentException ex) {
+        return new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ResponseBody
+    @ResponseStatus(code = HttpStatus.NOT_IMPLEMENTED)
+    @ExceptionHandler(UnsupportedOperationException.class)
+    public ErrorResponse onUnsupportedOperation(final UnsupportedOperationException ex) {
+        return new ErrorResponse(HttpStatus.NOT_IMPLEMENTED, ex.getMessage());
+    }
+
+    @ResponseBody
+    @ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(RuntimeException.class)
+    public ErrorResponse onRuntimeException(final RuntimeException ex) {
+        return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
 
     @Bean
@@ -114,5 +132,30 @@ public class MetadataController {
     @Bean
     public PlatformTransactionManager getTransactionManager(final EntityManagerFactory emf) {
         return new JpaTransactionManager(emf);
+    }
+
+    /**
+     * Simplified error response that just reports the status code, error and message.
+     */
+    private static class ErrorResponse {
+        private final HttpStatus status;
+        private final String message;
+
+        public ErrorResponse(HttpStatus status, String message) {
+            this.status = status;
+            this.message = message;
+        }
+
+        public int getStatus() {
+            return status.value();
+        }
+
+        public String getError() {
+            return status.getReasonPhrase();
+        }
+
+        public String getMessage() {
+            return message;
+        }
     }
 }

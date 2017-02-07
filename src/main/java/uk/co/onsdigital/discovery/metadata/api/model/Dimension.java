@@ -1,75 +1,96 @@
 package uk.co.onsdigital.discovery.metadata.api.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.common.annotations.VisibleForTesting;
+import uk.co.onsdigital.discovery.model.DimensionValue;
+import uk.co.onsdigital.discovery.model.DimensionalDataSet;
+import uk.co.onsdigital.discovery.model.Hierarchy;
 
-import java.util.Collections;
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
+import java.util.UUID;
 
 /**
- * Represents metadata about a dimension of a dataset.
+ * Represents a dimension in a dataset.
  */
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class Dimension implements Comparable<Dimension> {
-    private String id;
-    private String name;
-    private String url;
-    private Set<DimensionOption> options = Collections.emptySet();
+@Entity
+@Table(name = "dimension")
+@IdClass(Dimension.DimensionPK.class)
+@NamedQueries({
+        @NamedQuery(name = "Dimension.findByDataSetId", query = "SELECT d FROM Dimension d LEFT JOIN FETCH d.hierarchy WHERE d.dataSet.id = :dataSetId ORDER BY d.name")
+})
+public class Dimension {
 
-    public String getId() {
-        return id;
+    @Id
+    @ManyToOne
+    @JoinColumn(name = "dimensional_data_set_id", columnDefinition = "uuid")
+    private DimensionalDataSet dataSet;
+
+    @Id
+    @Column(name = "name")
+    private String name;
+
+    @OneToMany
+    @JoinColumns({
+            @JoinColumn(name = "dimensional_data_set_id", referencedColumnName = "dimensional_data_set_id", columnDefinition = "uuid", insertable = false, updatable = false),
+            @JoinColumn(name = "name", referencedColumnName = "name", insertable = false, updatable = false)
+    })
+    private List<DimensionValue> values;
+
+    @ManyToOne
+    @JoinColumn(name = "hierarchy_id", referencedColumnName = "id", columnDefinition = "uuid", insertable = false, updatable = false)
+    private Hierarchy hierarchy;
+
+    public Dimension() {
+        // Default constructor for JPA
     }
 
-    public void setId(String id) {
-        this.id = id;
+    @VisibleForTesting
+    public Dimension(DimensionalDataSet dataSet, String name, DimensionValue... values) {
+        this.dataSet = dataSet;
+        this.name = name;
+        this.values = Arrays.asList(values);
+    }
+
+    public DimensionalDataSet getDataSet() {
+        return dataSet;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public List<DimensionValue> getValues() {
+        return values;
     }
 
-    public String getUrl() {
-        return url;
+    public Hierarchy getHierarchy() {
+        return hierarchy;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setHierarchy(Hierarchy hierarchy) {
+        this.hierarchy = hierarchy;
     }
 
-    public Set<DimensionOption> getOptions() {
-        return options;
-    }
+    /**
+     * Composite primary key class.
+     */
+    static class DimensionPK implements Serializable {
+        private static final long serialVersionUID = 1L;
+        private UUID dataSet;
+        private String name;
 
-    public void setOptions(Set<DimensionOption> options) {
-        this.options = options;
-    }
+        @Override
+        public boolean equals(Object that) {
+            return this == that || that instanceof DimensionPK && Objects.equals(this.name, ((DimensionPK) that).name)
+                    && Objects.equals(this.dataSet, ((DimensionPK) that).dataSet);
+        }
 
-    @Override
-    public int compareTo(Dimension that) {
-        return Objects.compare(this.name, that.name, String.CASE_INSENSITIVE_ORDER);
-    }
-
-    @Override
-    public boolean equals(Object that) {
-        return this == that || that instanceof Dimension && this.compareTo((Dimension) that) == 0;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name);
-    }
-
-    @Override
-    public String toString() {
-        return "Dimension{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", url='" + url + '\'' +
-                ", options=" + options +
-                '}';
+        @Override
+        public int hashCode() {
+            return Objects.hash(dataSet, name);
+        }
     }
 }

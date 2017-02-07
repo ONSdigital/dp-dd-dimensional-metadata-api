@@ -1,18 +1,12 @@
 package uk.co.onsdigital.discovery.metadata.api.dao;
 
 import org.springframework.stereotype.Repository;
-import uk.co.onsdigital.discovery.metadata.api.exception.ConceptSystemNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
-import uk.co.onsdigital.discovery.metadata.api.exception.GeographicHierarchyNotFoundException;
-import uk.co.onsdigital.discovery.model.ConceptSystem;
+import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
-import uk.co.onsdigital.discovery.model.GeographicAreaHierarchy;
 
-import javax.persistence.EntityManager;
-import java.util.Collections;
+import javax.persistence.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -48,33 +42,9 @@ public class MetadataDaoImpl implements MetadataDao {
     }
 
     @Override
-    public Set<ConceptSystem> findConceptSystemsInDataSet(String dataSetId) throws DataSetNotFoundException {
-        final DimensionalDataSet dataSet = findDataSetById(dataSetId);
-        final Set<ConceptSystem> conceptSystems = dataSet.getReferencedConceptSystems();
-        return conceptSystems == null ? Collections.emptySet() : conceptSystems;
-    }
-
-    @Override
-    public ConceptSystem findConceptSystemByDataSetAndConceptSystemName(String dataSetId, String conceptSystemName)
-            throws DataSetNotFoundException, ConceptSystemNotFoundException {
-
-        return findConceptSystemsInDataSet(dataSetId)
-                .stream()
-                .filter(c -> conceptSystemName.equals(c.getId()))
-                .findAny()
-                .orElseThrow(() -> new ConceptSystemNotFoundException("No such concept system in dataset: " + conceptSystemName));
-    }
-
-    @Override
-    public GeographicAreaHierarchy findGeographyInDataSet(String dataSetId, String geographyId)
-            throws DataSetNotFoundException, GeographicHierarchyNotFoundException {
-
-        // FIXME: this is a provisional inefficient implementation for the current prototype.
-        // At some point the metadata database will be redesigned to not store data points, at which point this should be optimised.
-        final DimensionalDataSet dataSet = findDataSetById(dataSetId);
-        return dataSet.getReferencedGeographies()
-                .filter(geog -> Objects.equals(geog.getId(), geographyId))
-                .findAny()
-                .orElseThrow(() -> new GeographicHierarchyNotFoundException(geographyId));
+    public List<Dimension> findDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException {
+        return entityManager.createNamedQuery("Dimension.findByDataSetId", Dimension.class)
+                .setParameter("dataSetId", UUID.fromString(dataSetId))
+                .getResultList();
     }
 }

@@ -2,29 +2,23 @@ package uk.co.onsdigital.discovery.metadata.api.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
+import uk.co.onsdigital.discovery.metadata.api.dto.DataSet;
+import uk.co.onsdigital.discovery.metadata.api.dto.DimensionMetadata;
+import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
-import uk.co.onsdigital.discovery.metadata.api.model.DataSet;
 import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
-import uk.co.onsdigital.discovery.metadata.api.model.DimensionOption;
-import uk.co.onsdigital.discovery.metadata.api.model.ResultPage;
-import uk.co.onsdigital.discovery.model.Category;
-import uk.co.onsdigital.discovery.model.ConceptSystem;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
-import uk.co.onsdigital.discovery.model.GeographicArea;
-import uk.co.onsdigital.discovery.model.GeographicAreaHierarchy;
+import uk.co.onsdigital.discovery.model.Hierarchy;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Implementation of the {@link MetadataService}.
@@ -33,19 +27,14 @@ import static java.util.stream.Collectors.toCollection;
 public class MetadataServiceImpl implements MetadataService {
     private static final Logger logger = LoggerFactory.getLogger(MetadataServiceImpl.class);
 
-    /** Feature flag for whether to expose geography as dimensions. */
-    private final boolean includeGeoDimensions;
-
     private final MetadataDao metadataDao;
     private final UrlBuilder urlBuilder;
 
-    MetadataServiceImpl(MetadataDao metadataDao, UrlBuilder urlBuilder,
-                        @Value("${include.geo.dimensions}") boolean includeGeoDimensions) {
+    MetadataServiceImpl(MetadataDao metadataDao, UrlBuilder urlBuilder) {
         logger.info("Initialising metadata service. Base URL: {}", urlBuilder);
 
         this.metadataDao = metadataDao;
         this.urlBuilder = urlBuilder;
-        this.includeGeoDimensions = includeGeoDimensions;
     }
 
     @Transactional(readOnly = true)
@@ -55,7 +44,7 @@ public class MetadataServiceImpl implements MetadataService {
         final List<DataSet> resultDataSets = new ArrayList<>(dbDataSets.size());
 
         for (DimensionalDataSet dbDataSet : dbDataSets) {
-            resultDataSets.add(convertDataSet(dbDataSet, false, false));
+            resultDataSets.add(convertDataSet(dbDataSet, false));
         }
 
         return new ResultPage<>(urlBuilder.datasetsPage(pageSize), resultDataSets, totalDataSets, pageNumber, pageSize);
@@ -63,31 +52,29 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Transactional(readOnly = true)
     public DataSet findDataSetById(String dataSetId) throws DataSetNotFoundException {
-        return convertDataSet(metadataDao.findDataSetById(dataSetId), true, false);
+        return convertDataSet(metadataDao.findDataSetById(dataSetId), true);
     }
 
     @Transactional(readOnly = true)
-    public Set<Dimension> listDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException {
-        final DimensionalDataSet dataSet = metadataDao.findDataSetById(dataSetId);
-        return convertAllDimensions(dataSet, true);
+    public List<DimensionMetadata> listDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException {
+        return metadataDao.findDimensionsForDataSet(dataSetId).stream()
+                .map(d -> convertDimension(dataSetId, d, DimensionViewType.LIST))
+                .collect(toList());
     }
 
     @Transactional(readOnly = true)
-    public Dimension findDimensionById(String dataSetId, String dimensionId) throws DataSetNotFoundException, DimensionNotFoundException {
-        try {
-            final ConceptSystem conceptSystem = metadataDao.findConceptSystemByDataSetAndConceptSystemName(dataSetId, dimensionId);
-            return convertConceptSystemToDimension(conceptSystem, dataSetId, true);
-        } catch (DimensionNotFoundException ex) {
-            // If the dimension isn't a concept, then see if it is a geographical hierarchy
-            if (includeGeoDimensions) {
-                final GeographicAreaHierarchy hierarchy = metadataDao.findGeographyInDataSet(dataSetId, dimensionId);
-                return convertGeographyToDimension(hierarchy, dataSetId, true);
-            }
-            throw ex;
-        }
+    public DimensionMetadata findDimensionById(String dataSetId, String dimensionId, DimensionViewType viewType) throws DataSetNotFoundException, DimensionNotFoundException {
+        return convertDimension(dataSetId, findByName(metadataDao.findDimensionsForDataSet(dataSetId), dimensionId), viewType);
     }
 
-    private DataSet convertDataSet(final DimensionalDataSet dbDataSet, final boolean includeDimensions, final boolean includeOptions) {
+    /**
+     * Converts a dataset from the database into an API {@link DataSet} object.
+     *
+     * @param dbDataSet the dataset loaded from the database.
+     * @param includeDimensions whether to include the dimensions in the output.
+     * @return the {@link DataSet} model populated with the metadata about the dataset.
+     */
+    private DataSet convertDataSet(final DimensionalDataSet dbDataSet, final boolean includeDimensions) {
         final DataSet dataSet = new DataSet();
         dataSet.setId(dbDataSet.getId().toString());
         dataSet.setTitle(dbDataSet.getTitle());
@@ -97,112 +84,32 @@ public class MetadataServiceImpl implements MetadataService {
         dataSet.setDimensionsUrl(urlBuilder.dimensions(dataSet.getId()));
 
         if (includeDimensions) {
-            dataSet.setDimensions(convertAllDimensions(dbDataSet, includeOptions));
+            final List<DimensionMetadata> dimensions = metadataDao.findDimensionsForDataSet(dataSet.getId()).stream()
+                    .map(d -> convertDimension(dataSet.getId(), d, DimensionViewType.NONE))
+                    .collect(toList());
+            dataSet.setDimensions(dimensions);
         }
 
         return dataSet;
     }
 
-    private Set<Dimension> convertAllDimensions(final DimensionalDataSet dataSet, final boolean includeOptions) {
-        final Set<Dimension> dimensions = new TreeSet<>();
-        final String dataSetId = dataSet.getId().toString();
-        final Set<ConceptSystem> concepts = dataSet.getReferencedConceptSystems();
-        dimensions.addAll(convertConceptSystemsToDimensions(concepts, dataSetId, includeOptions));
-
-        if (includeGeoDimensions) {
-            final Set<Dimension> geoDimensions = dataSet.getReferencedGeographies()
-                    .map(g -> convertGeographyToDimension(g, dataSetId, includeOptions))
-                    .collect(Collectors.toSet());
-            dimensions.addAll(geoDimensions);
+    private static Dimension findByName(Collection<Dimension> dimensions, String name) throws DimensionNotFoundException {
+        if (dimensions == null) {
+            throw new DimensionNotFoundException(name);
         }
-
-        return dimensions;
+        return dimensions.stream().filter(d -> name.equals(d.getName())).findAny().orElseThrow(() -> new DimensionNotFoundException(name));
     }
 
-    private Set<Dimension> convertConceptSystemsToDimensions(final Set<ConceptSystem> concepts, final String dataSetId,
-                                                             final boolean includeOptions) {
-        return concepts.stream()
-                .filter(c -> c.getCategories() != null && !c.getCategories().isEmpty())
-                .map(c -> convertConceptSystemToDimension(c, dataSetId, includeOptions))
-                .collect(toCollection(TreeSet::new));
-    }
+    private DimensionMetadata convertDimension(String dataSetId, Dimension dimension, DimensionViewType viewType) {
+        Hierarchy hierarchy = dimension.getHierarchy();
+        DimensionMetadata result = new DimensionMetadata();
 
-    private Dimension convertGeographyToDimension(final GeographicAreaHierarchy geography,
-                                                  final String dataSetId, final boolean includeOptions) {
-        return DimensionBuilder.fromGeographicHierarchy(geography)
-                .withUrl(urlBuilder.dimension(dataSetId, geography.getId()))
-                .withAreas(includeOptions ? geography.getGeographicAreas() : null)
-                .build();
-    }
+        result.setName(dimension.getName());
+        result.setUrl(urlBuilder.dimension(dataSetId, dimension.getName()));
+        result.setHierarchical(hierarchy != null);
+        result.setType(hierarchy == null ? "standard" : hierarchy.getType());
+        result.setOptions(viewType.convertValues(dimension.getValues()));
 
-
-    private Dimension convertConceptSystemToDimension(ConceptSystem conceptSystem, String dataSetId, boolean includeOptions) {
-        return DimensionBuilder.fromConceptSystem(conceptSystem)
-                .withUrl(urlBuilder.dimension(dataSetId, conceptSystem.getId()))
-                .withCategories(includeOptions ? conceptSystem.getCategories() : null)
-                .build();
-    }
-
-    /**
-     * Builder class for dimensions.
-     */
-    static class DimensionBuilder {
-        private final Dimension dimension = new Dimension();
-
-        static DimensionBuilder fromConceptSystem(ConceptSystem conceptSystem) {
-            DimensionBuilder builder = new DimensionBuilder();
-            builder.dimension.setId(conceptSystem.getId());
-            builder.dimension.setName(conceptSystem.getId());
-            return builder;
-        }
-
-        static DimensionBuilder fromGeographicHierarchy(GeographicAreaHierarchy geographicAreaHierarchy) {
-            DimensionBuilder builder = new DimensionBuilder();
-            builder.dimension.setId(geographicAreaHierarchy.getId());
-            builder.dimension.setName(geographicAreaHierarchy.getId());
-            return builder;
-        }
-
-        DimensionBuilder withUrl(String url) {
-            dimension.setUrl(url);
-            return this;
-        }
-
-        DimensionBuilder withCategories(List<Category> categories) {
-            if (categories != null) {
-                final Set<DimensionOption> options = categories.stream()
-                        .map(category -> new DimensionOption(String.valueOf(category.getId()), category.getName()))
-                        .collect(toCollection(TreeSet::new));
-                dimension.setOptions(options);
-            }
-            return this;
-        }
-
-        DimensionBuilder withAreas(List<GeographicArea> areas) {
-            if (areas != null) {
-                final Set<DimensionOption> options = areas.stream()
-                        .filter(area -> area.getGeographicArea() == null) // Only top-level areas, others via recursion
-                        .map(this::convertAreaToOption)
-                        .collect(Collectors.toCollection(TreeSet::new));
-                dimension.setOptions(options);
-            }
-            return this;
-        }
-
-        private DimensionOption convertAreaToOption(final GeographicArea area) {
-            final DimensionOption option = new DimensionOption(area.getExtCode(), area.getName());
-            // Recursively add any child areas, if they exist. NB: currently this information won't be populated in the DB.
-            final List<GeographicArea> childAreas = area.getGeographicAreas();
-            if (childAreas != null) {
-                for (GeographicArea child : childAreas) {
-                    option.addOption(convertAreaToOption(child));
-                }
-            }
-            return option;
-        }
-
-        Dimension build() {
-            return dimension;
-        }
+        return result;
     }
 }

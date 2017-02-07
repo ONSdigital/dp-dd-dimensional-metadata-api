@@ -1,10 +1,10 @@
-package uk.co.onsdigital.discovery.metadata.api.model;
+package uk.co.onsdigital.discovery.metadata.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 
 import java.util.Collections;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Represents metadata about a particular dataset.
@@ -17,7 +17,7 @@ public class DataSet {
     private String title;
     private String url;
     private String metadata;
-    private Set<Dimension> dimensions = Collections.emptySet();
+    private List<DimensionMetadata> dimensions = Collections.emptyList();
     private String dimensionsUrl;
 
     public String getId() {
@@ -69,11 +69,11 @@ public class DataSet {
         this.dimensionsUrl = dimensionsUrl;
     }
 
-    public Set<Dimension> getDimensions() {
+    public List<DimensionMetadata> getDimensions() {
         return dimensions;
     }
 
-    public void setDimensions(Set<Dimension> dimensions) {
+    public void setDimensions(List<DimensionMetadata> dimensions) {
         this.dimensions = dimensions;
     }
 
