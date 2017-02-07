@@ -55,4 +55,15 @@ public class DimensionMetadata {
     public void setOptions(List<DimensionOption> options) {
         this.options = options;
     }
+
+    @Override
+    public String toString() {
+        return "DimensionMetadata{" +
+                "name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                ", hierarchical=" + hierarchical +
+                ", url='" + url + '\'' +
+                ", options=" + options +
+                '}';
+    }
 }

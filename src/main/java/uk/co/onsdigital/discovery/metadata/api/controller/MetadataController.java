@@ -103,6 +103,7 @@ public class MetadataController {
     @ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(RuntimeException.class)
     public ErrorResponse onRuntimeException(final RuntimeException ex) {
+        logger.error("Unhandled exception: {}", ex.getMessage(), ex);
         return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
 
