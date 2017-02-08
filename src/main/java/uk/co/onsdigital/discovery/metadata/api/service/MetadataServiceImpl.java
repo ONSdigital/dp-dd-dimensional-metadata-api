@@ -129,6 +129,7 @@ public class MetadataServiceImpl implements MetadataService {
         Hierarchy hierarchy = dimension.getHierarchy();
         DimensionMetadata result = new DimensionMetadata();
 
+        result.setId(dimension.getName());
         result.setName(dimension.getName());
         result.setUrl(urlBuilder.dimension(dataSetId, dimension.getName()));
         result.setHierarchical(hierarchy != null);
