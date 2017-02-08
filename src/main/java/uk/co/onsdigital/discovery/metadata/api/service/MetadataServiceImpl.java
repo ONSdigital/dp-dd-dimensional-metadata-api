@@ -155,7 +155,6 @@ public class MetadataServiceImpl implements MetadataService {
 
     private DimensionValue valueFromHierarchyEntry(final HierarchyEntry entry) {
         final DimensionValue value = new DimensionValue();
-        value.setId(UUID.randomUUID());
         value.setHierarchyEntry(entry);
         return value;
     }
