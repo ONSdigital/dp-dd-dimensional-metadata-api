@@ -7,6 +7,7 @@ import uk.co.onsdigital.discovery.model.HierarchyEntry;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,7 +47,7 @@ public enum DimensionViewType {
             // Map from dimension value IDs to the created dimension option, for de-duplication
             final Map<UUID, DimensionOption> options = new LinkedHashMap<>();
             // Set to collect the top-level elements in the hierarchy
-            final Set<DimensionOption> roots = new HashSet<>();
+            final Set<DimensionOption> roots = new LinkedHashSet<>();
 
             for (DimensionValue value : values) {
                 DimensionOption option = option(options, value, value.getHierarchyEntry());

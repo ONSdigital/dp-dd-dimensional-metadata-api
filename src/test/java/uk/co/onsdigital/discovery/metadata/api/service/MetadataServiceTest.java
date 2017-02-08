@@ -16,14 +16,18 @@ import uk.co.onsdigital.discovery.model.DimensionValue;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
 import uk.co.onsdigital.discovery.model.Hierarchy;
 import uk.co.onsdigital.discovery.model.HierarchyEntry;
+import uk.co.onsdigital.discovery.model.HierarchyLevelType;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 public class MetadataServiceTest {
 
@@ -65,7 +69,7 @@ public class MetadataServiceTest {
 
     @Test
     public void shouldConstructCorrectURLs() throws Exception {
-        when(mockDao.findDataSetsPage(1, 5)).thenReturn(Collections.singletonList(dbDataSet(UUID.fromString(DATASET_ID), "", "")));
+        when(mockDao.findDataSetsPage(1, 5)).thenReturn(singletonList(dbDataSet(UUID.fromString(DATASET_ID), "", "")));
 
         List<DataSet> result = metadataService.listAvailableDataSets(1, 5).getItems();
 
@@ -79,7 +83,7 @@ public class MetadataServiceTest {
         String title = "test title";
         String description = "test description";
         DimensionalDataSet dbDataSet = dbDataSet(dataSetId, title, description);
-        when(mockDao.findDataSetsPage(1, 10)).thenReturn(Collections.singletonList(dbDataSet));
+        when(mockDao.findDataSetsPage(1, 10)).thenReturn(singletonList(dbDataSet));
 
         List<DataSet> result = metadataService.listAvailableDataSets(1, 10).getItems();
 
@@ -167,6 +171,72 @@ public class MetadataServiceTest {
         metadataService.listDimensionsForDataSet(DATASET_ID);
     }
 
+    @Test
+    public void shouldReturnAllHierarchies() throws Exception {
+        Hierarchy h1 = hierarchy("id1", "type1", "name1");
+        Hierarchy h2 = hierarchy("id2", "type2", "name2");
+        List<Hierarchy> hierarchies = Arrays.asList(h1, h2);
+        when(mockDao.listAllHierarchies()).thenReturn(hierarchies);
+
+        List<DimensionMetadata> results = metadataService.listHierarchies();
+
+        assertThat(results).hasSize(hierarchies.size());
+        DimensionMetadata m1 = results.get(0);
+        DimensionMetadata m2 = results.get(1);
+
+        assertThat(m1).isEqualToComparingOnlyGivenFields(h1, "id", "name", "type");
+        assertThat(m2).isEqualToComparingOnlyGivenFields(h2, "id", "name", "type");
+        assertThat(m1.getUrl()).isEqualTo(BASE_URL + "/hierarchies/" + h1.getId());
+        assertThat(m2.getUrl()).isEqualTo(BASE_URL + "/hierarchies/" + h2.getId());
+        assertThat(m1.getOptions()).isNullOrEmpty();
+        assertThat(m2.getOptions()).isNullOrEmpty();
+    }
+
+    @Test
+    public void shouldReturnExistingHierarchyIfExists() throws Exception {
+        String hierarchyId = "testHierarchy";
+        Hierarchy hierarchy = hierarchy(hierarchyId, "test type", "test name");
+        HierarchyEntry entry1 = entry(hierarchy, 0, "code1", "name1");
+        HierarchyEntry entry2 = entry(hierarchy, 0, "code2", "name2");
+        List<HierarchyEntry> entries = Arrays.asList(entry1, entry2);
+        when(mockDao.findAllEntriesInHierarchy(hierarchyId)).thenReturn(entries);
+
+        DimensionMetadata result = metadataService.getHierarchy(hierarchyId);
+
+        assertThat(result).isEqualToComparingOnlyGivenFields(hierarchy, "id", "name", "type");
+        // Flat hierarchy
+        assertThat(result.getOptions()).hasSize(2);
+        assertThat(result.getOptions().get(0)).isEqualToComparingOnlyGivenFields(entry1, "name", "code", "levelType");
+        assertThat(result.getOptions().get(1)).isEqualToComparingOnlyGivenFields(entry2, "name", "code", "levelType");
+        assertThat(result.getOptions()).allMatch(option -> isEmpty(option.getChildren()));
+    }
+
+    @Test
+    public void shouldReflectHierarchy() throws Exception {
+        String hierarchyId = "testHierarchy";
+        Hierarchy hierarchy = hierarchy(hierarchyId, "test type", "test name");
+        HierarchyEntry entry1 = entry(hierarchy, 0, "code1", "name1");
+        HierarchyEntry entry2 = entry(hierarchy, 1, "code2", "name2");
+        HierarchyEntry entry3 = entry(hierarchy, 2, "code3", "name3");
+        entry2.setParent(entry1); entry1.getChildren().add(entry2);
+        entry3.setParent(entry2); entry2.getChildren().add(entry3);
+
+        // Mix up the order a bit to ensure that we get the correct result anyway
+        when(mockDao.findAllEntriesInHierarchy(hierarchyId)).thenReturn(Arrays.asList(entry3, entry1, entry2));
+
+        DimensionMetadata result = metadataService.getHierarchy(hierarchyId);
+        assertThat(result.getOptions()).hasSize(1);
+        DimensionOption root = result.getOptions().get(0);
+        assertThat(root).isEqualToComparingOnlyGivenFields(entry1, "name", "code", "levelType");
+        assertThat(root.getChildren()).hasSize(1);
+        DimensionOption firstChild = root.getChildren().iterator().next();
+        assertThat(firstChild).isEqualToComparingOnlyGivenFields(entry2, "name", "code", "levelType");
+        assertThat(firstChild.getChildren()).hasSize(1);
+        DimensionOption secondChild = firstChild.getChildren().iterator().next();
+        assertThat(secondChild).isEqualToComparingOnlyGivenFields(entry3, "name", "code", "levelType");
+        assertThat(secondChild.getChildren()).isNullOrEmpty();
+    }
+
     private static void assertDataSetEqualsDbModel(final DataSet actual, final DimensionalDataSet expected) {
         assertThat(actual.getId()).isEqualTo(expected.getId().toString());
         assertThat(actual.getS3URL()).isEqualTo(expected.getS3URL());
@@ -177,5 +247,26 @@ public class MetadataServiceTest {
         dataSet.setId(dataSetId);
         dataSet.setS3URL(s3URL);
         return dataSet;
+    }
+
+    private static Hierarchy hierarchy(String id, String type, String name) {
+        final Hierarchy hierarchy = new Hierarchy();
+        hierarchy.setId(id);
+        hierarchy.setType(type);
+        hierarchy.setName(name);
+        return hierarchy;
+    }
+
+    private static HierarchyEntry entry(Hierarchy hierarchy, int level, String code, String name) {
+        HierarchyEntry entry = new HierarchyEntry();
+        entry.setHierarchy(hierarchy);
+        entry.setName(name);
+        entry.setCode(code);
+        entry.setChildren(new ArrayList<>());
+        entry.setId(UUID.randomUUID());
+        HierarchyLevelType levelType = new HierarchyLevelType();
+        levelType.setLevel(level);
+        entry.setLevelType(levelType);
+        return entry;
     }
 }
