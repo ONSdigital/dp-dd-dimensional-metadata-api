@@ -19,6 +19,7 @@ public class UrlBuilder {
     private final UriTemplate dataSetTemplate;
     private final UriTemplate dimensionsTemplate;
     private final UriTemplate dimensionTemplate;
+    private final UriTemplate hierarchyTemplate;
 
     UrlBuilder(@Value("#{systemEnvironment['BASE_URL'] ?: 'http://localhost:20099'}") String baseUrl) {
         this.baseUrl = requireNonNull(baseUrl);
@@ -27,6 +28,7 @@ public class UrlBuilder {
         dataSetTemplate = new UriTemplate(baseUrl + "/datasets/{dataSetId}");
         dimensionsTemplate = new UriTemplate(baseUrl + "/datasets/{dataSetId}/dimensions");
         dimensionTemplate = new UriTemplate(baseUrl + "/datasets/{dataSetId}/dimensions/{dimensionId}");
+        hierarchyTemplate = new UriTemplate(baseUrl + "/hierarchies/{hierarchyId}");
     }
 
     /**
@@ -74,6 +76,16 @@ public class UrlBuilder {
      */
     public String dimension(String dataSetId, String dimensionId) {
         return dimensionTemplate.expand(dataSetId, dimensionId).toString();
+    }
+
+    /**
+     * Constructs a link to the given hierarchy.
+     *
+     * @param hierarchyId the id of the hierarchy.
+     * @return a link to the given hierarchy.
+     */
+    public String hierarchy(String hierarchyId) {
+        return hierarchyTemplate.expand(hierarchyId).toString();
     }
 
     /**

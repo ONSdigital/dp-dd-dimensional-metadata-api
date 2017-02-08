@@ -55,4 +55,9 @@ public class UrlBuilderTest {
         // Dataset IDs are UUIDs so will always be ASCII, but dimension IDs might not be. NB: assume UTF-8 encoding.
         assertThat(urlBuilder.dimension("test", "café")).isEqualTo(BASE_URL + "/datasets/test/dimensions/caf%C3%A9");
     }
+
+    @Test
+    public void shouldConstructCorrectHierarchyLinks() {
+        assertThat(urlBuilder.hierarchy("testHierarchy")).isEqualTo(BASE_URL + "/hierarchies/testHierarchy");
+    }
 }
