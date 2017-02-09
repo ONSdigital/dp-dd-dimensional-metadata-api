@@ -11,7 +11,7 @@ import uk.co.onsdigital.discovery.metadata.api.dto.DimensionOption;
 import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
-import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
+import uk.co.onsdigital.discovery.model.Dimension;
 import uk.co.onsdigital.discovery.model.DimensionValue;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
 import uk.co.onsdigital.discovery.model.Hierarchy;
@@ -131,9 +131,9 @@ public class MetadataServiceTest {
     public void shouldMapDimensionsCorrectly() throws Exception {
         DimensionalDataSet dataSet = new DimensionalDataSet();
         dataSet.setId(UUID.randomUUID());
-        Dimension dim1 = new Dimension(dataSet, "dim1", new DimensionValue(dataSet.getId(), "dim1", "val1"),
-                                                        new DimensionValue(dataSet.getId(), "dim1", "val2"));
-        Dimension dim2 = new Dimension(dataSet, "dim2", new DimensionValue(dataSet.getId(), "dim2", "val3"));
+        Dimension dim1 = new Dimension(dataSet, "dim1", new DimensionValue("val1"),
+                                                        new DimensionValue("val2"));
+        Dimension dim2 = new Dimension(dataSet, "dim2", new DimensionValue("val3"));
         HierarchyEntry entry = new HierarchyEntry();
         entry.setName("hierarchical name");
         entry.setCode("ABC0123F");

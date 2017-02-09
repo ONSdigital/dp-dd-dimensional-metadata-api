@@ -30,7 +30,7 @@ public class DimensionViewTypeTest {
 
     @Test
     public void viewTypeNoneShouldAlwaysReturnNull() {
-        List<DimensionValue> values = Arrays.asList(new DimensionValue(UUID.randomUUID(), "a", "1"), new DimensionValue(UUID.randomUUID(), "b", "2"));
+        List<DimensionValue> values = Arrays.asList(new DimensionValue("1"), new DimensionValue("2"));
         assertThat(DimensionViewType.NONE.convertValues(values)).isNull();
     }
 
@@ -95,7 +95,7 @@ public class DimensionViewTypeTest {
     @Test
     public void viewTypeHierarchyShouldCreateEmptyLevelsWhenMissingInData() {
         final HierarchyEntry england = getEnglandHierarchy();
-        final DimensionValue value = new DimensionValue(UUID.randomUUID(), "testName", "testValue");
+        final DimensionValue value = new DimensionValue("testValue");
         value.setHierarchyEntry(england);
 
         final List<DimensionOption> roots = DimensionViewType.HIERARCHY.convertValues(singletonList(value));
@@ -134,12 +134,9 @@ public class DimensionViewTypeTest {
     private List<DimensionValue> getTestDimensionValues(final Map<String, HierarchyEntry> hierarchyEntryMap) {
         final List<DimensionValue> values = new ArrayList<>();
 
-        final String dimensionName = "testDimension";
-        final UUID dataSetId = UUID.randomUUID();
-
         for (int i = 0; i < 100; ++i) {
             final String code = "value" + i;
-            final DimensionValue value = new DimensionValue(dataSetId, dimensionName, code);
+            final DimensionValue value = new DimensionValue( code);
             if (hierarchyEntryMap.containsKey(code)) {
                 value.setHierarchyEntry(hierarchyEntryMap.get(code));
             }

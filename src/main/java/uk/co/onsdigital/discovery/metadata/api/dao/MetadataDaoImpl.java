@@ -2,7 +2,7 @@ package uk.co.onsdigital.discovery.metadata.api.dao;
 
 import org.springframework.stereotype.Repository;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
-import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
+import uk.co.onsdigital.discovery.model.Dimension;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
 import uk.co.onsdigital.discovery.model.Hierarchy;
 import uk.co.onsdigital.discovery.model.HierarchyEntry;
@@ -45,9 +45,7 @@ public class MetadataDaoImpl implements MetadataDao {
 
     @Override
     public List<Dimension> findDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException {
-        return entityManager.createNamedQuery("Dimension.findByDataSetId", Dimension.class)
-                .setParameter("dataSetId", UUID.fromString(dataSetId))
-                .getResultList();
+        return findDataSetById(dataSetId).getDimensions();
     }
 
     @Override

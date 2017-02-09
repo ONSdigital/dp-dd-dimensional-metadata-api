@@ -1,7 +1,7 @@
 package uk.co.onsdigital.discovery.metadata.api.dao;
 
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
-import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
+import uk.co.onsdigital.discovery.model.Dimension;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
 import uk.co.onsdigital.discovery.model.Hierarchy;
 import uk.co.onsdigital.discovery.model.HierarchyEntry;

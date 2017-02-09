@@ -12,7 +12,7 @@ import uk.co.onsdigital.discovery.metadata.api.dto.DimensionOption;
 import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
-import uk.co.onsdigital.discovery.metadata.api.model.Dimension;
+import uk.co.onsdigital.discovery.model.Dimension;
 import uk.co.onsdigital.discovery.model.DimensionValue;
 import uk.co.onsdigital.discovery.model.DimensionalDataSet;
 import uk.co.onsdigital.discovery.model.Hierarchy;
@@ -21,7 +21,6 @@ import uk.co.onsdigital.discovery.model.HierarchyEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
 
