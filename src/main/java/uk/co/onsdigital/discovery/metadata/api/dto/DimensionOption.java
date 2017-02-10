@@ -2,32 +2,37 @@ package uk.co.onsdigital.discovery.metadata.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import uk.co.onsdigital.discovery.model.HierarchyLevelType;
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Ordering;
+import uk.co.onsdigital.discovery.model.*;
 
-import java.util.Set;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.UUID;
 
 /**
  * A dimension option.
  */
-public class DimensionOption {
+public class DimensionOption implements Comparable<DimensionOption> {
 
     private UUID id;
     private String code;
     private String name;
     private HierarchyLevelType levelType;
-    private Set<DimensionOption> children;
+    private SortedSet<DimensionOption> children;
 
-    public DimensionOption(UUID id, String code, String name, HierarchyLevelType levelType, Set<DimensionOption> children) {
+    public DimensionOption(UUID id, String code, String name, HierarchyLevelType levelType) {
         this.id = id;
         this.code = code;
         this.name = name;
         this.levelType = levelType;
-        this.children = children;
+        this.children = null;
     }
 
     public DimensionOption(UUID id, String code, String name) {
-        this(id, code, name, null, null);
+        this(id, code, name, null);
     }
 
     public DimensionOption(UUID id, String name) {
@@ -53,8 +58,21 @@ public class DimensionOption {
 
     @JsonProperty("options")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public Set<DimensionOption> getChildren() {
+    public SortedSet<DimensionOption> getChildren() {
         return children;
+    }
+
+    /**
+     * Adds a new child option to this dimension option, initialising the children set if necessary.
+     *
+     * @param childOption the child option to add to this node.
+     * @return {@code true} if the child did not already exist in the set of children, otherwise {@code false}.
+     */
+    public boolean addChild(DimensionOption childOption) {
+        if (children == null) {
+            children = new TreeSet<>();
+        }
+        return children.add(childOption);
     }
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
@@ -63,32 +81,28 @@ public class DimensionOption {
         return id == null;
     }
 
+    /**
+     * Compares dimension options by hierarchy level type (if present) and then alphabetically by name.
+     * <p>
+     * {@inheritDoc}
+     */
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+    public int compareTo(final DimensionOption that) {
+        return ComparisonChain.start()
+                .compare(this.levelType, that.levelType, LevelTypeComparator.INSTANCE)
+                .compare(this.code, that.code, Ordering.natural().nullsLast())
+                .compare(this.name, that.name, Ordering.from(String.CASE_INSENSITIVE_ORDER).nullsLast())
+                .result();
+    }
 
-        DimensionOption that = (DimensionOption) o;
-
-        if (code != null ? !code.equals(that.code) : that.code != null) {
-            return false;
-        }
-        if (name != null ? !name.equals(that.name) : that.name != null) {
-            return false;
-        }
-        return levelType != null ? levelType.equals(that.levelType) : that.levelType == null;
+    @Override
+    public boolean equals(Object that) {
+        return that instanceof DimensionOption && this.compareTo((DimensionOption) that) == 0;
     }
 
     @Override
     public int hashCode() {
-        int result = code != null ? code.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (levelType != null ? levelType.hashCode() : 0);
-        return result;
+        return Objects.hash(name, code, levelType);
     }
 
     @Override
@@ -100,5 +114,23 @@ public class DimensionOption {
                 ", levelType=" + levelType +
                 ", children=" + children +
                 '}';
+    }
+
+    /**
+     * Orders level types by level and then alphabetically by name (case-insensitive).
+     */
+    private enum LevelTypeComparator implements Comparator<HierarchyLevelType> {
+        INSTANCE;
+
+        @Override
+        public int compare(HierarchyLevelType h1, HierarchyLevelType h2) {
+            if (h1 == null || h2 == null) {
+                return Ordering.arbitrary().nullsFirst().compare(h1, h2);
+            }
+            return ComparisonChain.start()
+                    .compare(h1.getLevel(), h2.getLevel(), Ordering.natural().nullsFirst())
+                    .compare(h1.getName(), h2.getName(), Ordering.from(String.CASE_INSENSITIVE_ORDER).nullsFirst())
+                    .result();
+        }
     }
 }

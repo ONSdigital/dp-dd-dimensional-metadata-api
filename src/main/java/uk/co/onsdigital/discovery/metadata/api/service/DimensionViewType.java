@@ -29,6 +29,7 @@ public enum DimensionViewType {
         List<DimensionOption> convertValues(List<DimensionValue> values) {
             return values.stream()
                     .map(DimensionViewType::convertValueToOption)
+                    .sorted()
                     .collect(toList());
         }
     },
@@ -63,7 +64,7 @@ public enum DimensionViewType {
                         final DimensionValue parentValue = valuesByHierarchyEntryId.get(parentEntry.getId());
                         final DimensionOption parent = option(options, parentValue, parentEntry);
 
-                        isNewEntry = parent.getChildren().add(option);
+                        isNewEntry = parent.addChild(option);
                         option = parent;
                     }
                 }
@@ -115,7 +116,7 @@ public enum DimensionViewType {
     private static DimensionOption convertEntryToOption(final DimensionValue dimensionValue, final HierarchyEntry hierarchyEntry) {
         if (hierarchyEntry != null) {
             final UUID id = dimensionValue != null ? dimensionValue.getId() : null;
-            return new DimensionOption(id, hierarchyEntry.getCode(), hierarchyEntry.getName(), hierarchyEntry.getLevelType(), new LinkedHashSet<>());
+            return new DimensionOption(id, hierarchyEntry.getCode(), hierarchyEntry.getName(), hierarchyEntry.getLevelType());
         } else {
             return new DimensionOption(dimensionValue.getId(), dimensionValue.getValue());
         }
