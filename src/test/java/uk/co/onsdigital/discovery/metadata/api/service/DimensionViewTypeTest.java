@@ -2,22 +2,21 @@ package uk.co.onsdigital.discovery.metadata.api.service;
 
 import org.testng.annotations.Test;
 import uk.co.onsdigital.discovery.metadata.api.dto.DimensionOption;
-import uk.co.onsdigital.discovery.model.DimensionValue;
-import uk.co.onsdigital.discovery.model.Hierarchy;
-import uk.co.onsdigital.discovery.model.HierarchyEntry;
-import uk.co.onsdigital.discovery.model.HierarchyLevelType;
+import uk.co.onsdigital.discovery.model.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -45,7 +44,7 @@ public class DimensionViewTypeTest {
 
     @Test
     public void viewTypeListShouldReturnAFlatListForFlatDimensions() {
-        final List<DimensionValue> values = getTestDimensionValues(Collections.emptyMap());
+        final List<DimensionValue> values = getTestDimensionValues(emptyMap());
         final List<DimensionOption> options = DimensionViewType.LIST.convertValues(values);
 
         assertThat(options).hasSize(values.size());
@@ -58,9 +57,9 @@ public class DimensionViewTypeTest {
         final List<DimensionOption> options = DimensionViewType.LIST.convertValues(values);
 
         assertThat(options).hasSize(values.size());
-        for (int i = 0; i < values.size(); ++i) {
-            DimensionValue value = values.get(i);
-            DimensionOption option = options.get(i);
+        final Map<UUID, DimensionValue> valuesById = values.stream().collect(toMap(DimensionValue::getId, identity()));
+        for (DimensionOption option : options) {
+            DimensionValue value = valuesById.get(option.getId());
 
             assertThat(option.getId()).isNotNull();
             assertThat(option.getName()).isEqualTo(value.getHierarchyEntry().getName());
@@ -71,7 +70,7 @@ public class DimensionViewTypeTest {
 
     @Test
     public void viewTypeHierarchyShouldReturnFlatListForFlatDimensions() {
-        final List<DimensionValue> values = getTestDimensionValues(Collections.emptyMap());
+        final List<DimensionValue> values = getTestDimensionValues(emptyMap());
         final List<DimensionOption> options = DimensionViewType.HIERARCHY.convertValues(values);
 
         assertThat(options).hasSize(values.size());
@@ -121,6 +120,50 @@ public class DimensionViewTypeTest {
         assertThat(eng.getChildren()).isNullOrEmpty();
     }
 
+    @Test
+    public void viewTypeListShouldOrderResultsByNameIfNoHierarchy() throws Exception {
+        final List<DimensionValue> values = Arrays.asList(new DimensionValue("c"), new DimensionValue("a"), new DimensionValue("B"));
+        final List<DimensionOption> options = DimensionViewType.LIST.convertValues(values);
+
+        assertThat(options).hasSize(values.size());
+        assertThat(options).extracting(DimensionOption::getName).containsExactly("a", "B", "c");
+    }
+
+    @Test
+    public void viewTypeListShouldOrderResultsByLevel() throws Exception {
+        final List<DimensionValue> values = Arrays.asList(valueWithLevel(3), valueWithLevel(1), valueWithLevel(2));
+        final List<DimensionOption> options = DimensionViewType.LIST.convertValues(values);
+
+        assertThat(options).hasSize(values.size());
+        assertThat(options).extracting(o -> o.getLevelType().getLevel()).containsExactly(1, 2, 3);
+    }
+
+    @Test
+    public void viewTypeHierarchyShouldOrderChildren() throws Exception {
+        final List<DimensionValue> values = getTestDimensionValues(getTestHierarchy());
+        final List<DimensionOption> options = DimensionViewType.HIERARCHY.convertValues(values);
+
+        assertAllChildrenAreSorted(options);
+    }
+
+    private void assertAllChildrenAreSorted(List<DimensionOption> options) {
+        assertThat(options).isSorted();
+        for (DimensionOption option : options) {
+            if (option.getChildren() != null) {
+                assertAllChildrenAreSorted(new ArrayList<>(option.getChildren()));
+            }
+        }
+    }
+
+    private DimensionValue valueWithLevel(int level) {
+        final DimensionValue value = new DimensionValue();
+        final HierarchyEntry entry = new HierarchyEntry();
+        entry.setLevelType(new HierarchyLevelType());
+        entry.getLevelType().setLevel(level);
+        value.setHierarchyEntry(entry);
+        return value;
+    }
+
     private int countAll(Collection<DimensionOption> options) {
         int count = 0;
         if (options != null) {
@@ -136,7 +179,7 @@ public class DimensionViewTypeTest {
 
         for (int i = 0; i < 100; ++i) {
             final String code = "value" + i;
-            final DimensionValue value = new DimensionValue( code);
+            final DimensionValue value = new DimensionValue(code);
             if (hierarchyEntryMap.containsKey(code)) {
                 value.setHierarchyEntry(hierarchyEntryMap.get(code));
             }
