@@ -35,10 +35,6 @@ public class DimensionOption implements Comparable<DimensionOption> {
         this(id, code, name, null);
     }
 
-    public DimensionOption(UUID id, String name) {
-        this(id, null, name);
-    }
-
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public UUID getId() {
         return id;
