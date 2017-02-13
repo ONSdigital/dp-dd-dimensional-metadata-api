@@ -160,7 +160,7 @@ public class MetadataServiceTest {
         assertThat(dimension2.getName()).isEqualTo("dim2");
         assertThat(dimension2.getType()).isEqualTo("test");
         assertThat(dimension2.getUrl()).isEqualTo(BASE_URL + "/versions/" + DATASET_ID + "/dimensions/dim2");
-        assertThat(dimension2.isHierarchical()).isTrue();t
+        assertThat(dimension2.isHierarchical()).isTrue();
         assertThat(dimension2.getOptions()).containsOnly(new DimensionOption(null, entry.getCode(), entry.getName()));
     }
 
