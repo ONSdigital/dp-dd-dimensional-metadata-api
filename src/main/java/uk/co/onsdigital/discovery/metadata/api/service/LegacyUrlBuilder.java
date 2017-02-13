@@ -10,7 +10,7 @@ import static java.util.Objects.requireNonNull;
  * Specialised URL builder service to centralise construction of external URLs.
  */
 @Service
-public class UrlBuilder {
+public class LegacyUrlBuilder {
     static final int MAX_PAGE_SIZE = 1000;
 
     private final String baseUrl;
@@ -21,13 +21,13 @@ public class UrlBuilder {
     private final UriTemplate dimensionTemplate;
     private final UriTemplate hierarchyTemplate;
 
-    UrlBuilder(@Value("#{systemEnvironment['BASE_URL'] ?: 'http://localhost:20099'}") String baseUrl) {
+    LegacyUrlBuilder(@Value("#{systemEnvironment['BASE_URL'] ?: 'http://localhost:20099'}") String baseUrl) {
         this.baseUrl = requireNonNull(baseUrl);
 
-        pageTemplate = new UriTemplate(baseUrl + "/datasets?page={page}&size={size}");
-        dataSetTemplate = new UriTemplate(baseUrl + "/datasets/{dataSetId}");
-        dimensionsTemplate = new UriTemplate(baseUrl + "/datasets/{dataSetId}/dimensions");
-        dimensionTemplate = new UriTemplate(baseUrl + "/datasets/{dataSetId}/dimensions/{dimensionId}");
+        pageTemplate = new UriTemplate(baseUrl + "/versions?page={page}&size={size}");
+        dataSetTemplate = new UriTemplate(baseUrl + "/version/{dataSetId}");
+        dimensionsTemplate = new UriTemplate(baseUrl + "/version/{dataSetId}/dimensions");
+        dimensionTemplate = new UriTemplate(baseUrl + "/version/{dataSetId}/dimensions/{dimensionId}");
         hierarchyTemplate = new UriTemplate(baseUrl + "/hierarchies/{hierarchyId}");
     }
 

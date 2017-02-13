@@ -5,10 +5,10 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
-import uk.co.onsdigital.discovery.metadata.api.dto.DataSet;
-import uk.co.onsdigital.discovery.metadata.api.dto.DimensionMetadata;
-import uk.co.onsdigital.discovery.metadata.api.dto.DimensionOption;
-import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
+import uk.co.onsdigital.discovery.metadata.api.legacy.dto.DataSet;
+import uk.co.onsdigital.discovery.metadata.api.legacy.dto.DimensionMetadata;
+import uk.co.onsdigital.discovery.metadata.api.legacy.dto.DimensionOption;
+import uk.co.onsdigital.discovery.metadata.api.legacy.dto.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 import uk.co.onsdigital.discovery.model.Dimension;
@@ -42,7 +42,7 @@ public class MetadataServiceTest {
     @BeforeMethod
     public void createMetadataService() {
         MockitoAnnotations.initMocks(this);
-        metadataService = new MetadataServiceImpl(mockDao, new UrlBuilder(BASE_URL));
+        metadataService = new MetadataServiceImpl(mockDao, new LegacyUrlBuilder(BASE_URL));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class MetadataServiceTest {
         List<DataSet> result = metadataService.listAvailableDataSets(1, 5).getItems();
 
         assertThat(result).hasSize(1);
-        assertThat(result.iterator().next().getUrl()).isEqualTo(BASE_URL + "/datasets/" + DATASET_ID);
+        assertThat(result.iterator().next().getUrl()).isEqualTo(BASE_URL + "/version/" + DATASET_ID);
     }
 
     @Test
@@ -153,13 +153,13 @@ public class MetadataServiceTest {
         // Check that dimension options are properly created
         assertThat(dimension1.getName()).isEqualTo("dim1");
         assertThat(dimension1.getType()).isEqualTo("standard");
-        assertThat(dimension1.getUrl()).isEqualTo(BASE_URL + "/datasets/" + DATASET_ID + "/dimensions/dim1");
+        assertThat(dimension1.getUrl()).isEqualTo(BASE_URL + "/version/" + DATASET_ID + "/dimensions/dim1");
         assertThat(dimension1.isHierarchical()).isFalse();
         assertThat(dimension1.getOptions()).containsOnly(new DimensionOption(null, "val1"), new DimensionOption(null, "val2"));
 
         assertThat(dimension2.getName()).isEqualTo("dim2");
         assertThat(dimension2.getType()).isEqualTo("test");
-        assertThat(dimension2.getUrl()).isEqualTo(BASE_URL + "/datasets/" + DATASET_ID + "/dimensions/dim2");
+        assertThat(dimension2.getUrl()).isEqualTo(BASE_URL + "/version/" + DATASET_ID + "/dimensions/dim2");
         assertThat(dimension2.isHierarchical()).isTrue();
         assertThat(dimension2.getOptions()).containsOnly(new DimensionOption(null, entry.getCode(), entry.getName()));
     }
