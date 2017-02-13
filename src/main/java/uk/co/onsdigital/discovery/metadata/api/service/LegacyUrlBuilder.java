@@ -26,8 +26,8 @@ public class LegacyUrlBuilder {
 
         pageTemplate = new UriTemplate(baseUrl + "/versions?page={page}&size={size}");
         dataSetTemplate = new UriTemplate(baseUrl + "/version/{dataSetId}");
-        dimensionsTemplate = new UriTemplate(baseUrl + "/version/{dataSetId}/dimensions");
-        dimensionTemplate = new UriTemplate(baseUrl + "/version/{dataSetId}/dimensions/{dimensionId}");
+        dimensionsTemplate = new UriTemplate(baseUrl + "/versions/{dataSetId}/dimensions");
+        dimensionTemplate = new UriTemplate(baseUrl + "/versions/{dataSetId}/dimensions/{dimensionId}");
         hierarchyTemplate = new UriTemplate(baseUrl + "/hierarchies/{hierarchyId}");
     }
 

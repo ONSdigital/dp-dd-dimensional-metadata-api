@@ -64,19 +64,19 @@ public class MetadataController {
         return metadataService.listAvailableDataSets(max(pageable.getPageNumber(), 1), max(pageable.getPageSize(), 1));
     }
 
-    @GetMapping("/version/{dataSetId}")
+    @GetMapping("/versions/{dataSetId}")
     @CrossOrigin
     public DataSet findDataSetById(@PathVariable String dataSetId) throws DataSetNotFoundException {
         return metadataService.findDataSetById(dataSetId);
     }
 
-    @GetMapping("/version/{dataSetId}/dimensions")
+    @GetMapping("/versions/{dataSetId}/dimensions")
     @CrossOrigin
     public List<DimensionMetadata> listDimensionsForDataSet(@PathVariable String dataSetId) throws DataSetNotFoundException {
         return metadataService.listDimensionsForDataSet(dataSetId);
     }
 
-    @GetMapping("/version/{dataSetId}/dimensions/{dimensionId}")
+    @GetMapping("/versions/{dataSetId}/dimensions/{dimensionId}")
     @CrossOrigin
     public DimensionMetadata findDimensionById(@PathVariable String dataSetId, @PathVariable String dimensionId,
                                                @RequestParam(name = "view", defaultValue = "list") String view)

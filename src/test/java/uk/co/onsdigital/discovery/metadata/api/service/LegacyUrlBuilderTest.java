@@ -37,23 +37,23 @@ public class LegacyUrlBuilderTest {
 
     @Test
     public void shouldConstructCorrectDataSetLinks() {
-        assertThat(legacyUrlBuilder.dataset("test")).isEqualTo(BASE_URL + "/version/test");
+        assertThat(legacyUrlBuilder.dataset("test")).isEqualTo(BASE_URL + "/versions/test");
     }
 
     @Test
     public void shouldConstructCorrectDimensionsLinks() {
-        assertThat(legacyUrlBuilder.dimensions("test")).isEqualTo(BASE_URL + "/version/test/dimensions");
+        assertThat(legacyUrlBuilder.dimensions("test")).isEqualTo(BASE_URL + "/versions/test/dimensions");
     }
 
     @Test
     public void shouldConstructCorrectDimensionLinks() {
-        assertThat(legacyUrlBuilder.dimension("test", "testDimension")).isEqualTo(BASE_URL + "/version/test/dimensions/testDimension");
+        assertThat(legacyUrlBuilder.dimension("test", "testDimension")).isEqualTo(BASE_URL + "/versions/test/dimensions/testDimension");
     }
 
     @Test
     public void shouldHandleUnicodeDimensionNames() {
         // Dataset IDs are UUIDs so will always be ASCII, but dimension IDs might not be. NB: assume UTF-8 encoding.
-        assertThat(legacyUrlBuilder.dimension("test", "café")).isEqualTo(BASE_URL + "/version/test/dimensions/caf%C3%A9");
+        assertThat(legacyUrlBuilder.dimension("test", "café")).isEqualTo(BASE_URL + "/versions/test/dimensions/caf%C3%A9");
     }
 
     @Test

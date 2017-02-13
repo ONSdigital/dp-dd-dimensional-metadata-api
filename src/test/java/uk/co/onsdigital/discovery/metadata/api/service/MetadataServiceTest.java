@@ -74,7 +74,7 @@ public class MetadataServiceTest {
         List<DataSet> result = metadataService.listAvailableDataSets(1, 5).getItems();
 
         assertThat(result).hasSize(1);
-        assertThat(result.iterator().next().getUrl()).isEqualTo(BASE_URL + "/version/" + DATASET_ID);
+        assertThat(result.iterator().next().getUrl()).isEqualTo(BASE_URL + "/versions/" + DATASET_ID);
     }
 
     @Test
@@ -153,14 +153,14 @@ public class MetadataServiceTest {
         // Check that dimension options are properly created
         assertThat(dimension1.getName()).isEqualTo("dim1");
         assertThat(dimension1.getType()).isEqualTo("standard");
-        assertThat(dimension1.getUrl()).isEqualTo(BASE_URL + "/version/" + DATASET_ID + "/dimensions/dim1");
+        assertThat(dimension1.getUrl()).isEqualTo(BASE_URL + "/versions/" + DATASET_ID + "/dimensions/dim1");
         assertThat(dimension1.isHierarchical()).isFalse();
         assertThat(dimension1.getOptions()).containsOnly(new DimensionOption(null, "val1"), new DimensionOption(null, "val2"));
 
         assertThat(dimension2.getName()).isEqualTo("dim2");
         assertThat(dimension2.getType()).isEqualTo("test");
-        assertThat(dimension2.getUrl()).isEqualTo(BASE_URL + "/version/" + DATASET_ID + "/dimensions/dim2");
-        assertThat(dimension2.isHierarchical()).isTrue();
+        assertThat(dimension2.getUrl()).isEqualTo(BASE_URL + "/versions/" + DATASET_ID + "/dimensions/dim2");
+        assertThat(dimension2.isHierarchical()).isTrue();t
         assertThat(dimension2.getOptions()).containsOnly(new DimensionOption(null, entry.getCode(), entry.getName()));
     }
 
