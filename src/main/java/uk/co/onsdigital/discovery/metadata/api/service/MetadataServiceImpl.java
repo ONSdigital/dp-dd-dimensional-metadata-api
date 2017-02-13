@@ -6,10 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
-import uk.co.onsdigital.discovery.metadata.api.dto.DataSet;
-import uk.co.onsdigital.discovery.metadata.api.dto.DimensionMetadata;
-import uk.co.onsdigital.discovery.metadata.api.dto.DimensionOption;
-import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
+import uk.co.onsdigital.discovery.metadata.api.legacy.dto.DataSet;
+import uk.co.onsdigital.discovery.metadata.api.legacy.dto.DimensionMetadata;
+import uk.co.onsdigital.discovery.metadata.api.legacy.dto.DimensionOption;
+import uk.co.onsdigital.discovery.metadata.api.legacy.dto.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 import uk.co.onsdigital.discovery.model.Dimension;
@@ -32,13 +32,13 @@ public class MetadataServiceImpl implements MetadataService {
     private static final Logger logger = LoggerFactory.getLogger(MetadataServiceImpl.class);
 
     private final MetadataDao metadataDao;
-    private final UrlBuilder urlBuilder;
+    private final LegacyUrlBuilder legacyUrlBuilder;
 
-    MetadataServiceImpl(MetadataDao metadataDao, UrlBuilder urlBuilder) {
-        logger.info("Initialising metadata service. Base URL: {}", urlBuilder);
+    MetadataServiceImpl(MetadataDao metadataDao, LegacyUrlBuilder legacyUrlBuilder) {
+        logger.info("Initialising metadata service. Base URL: {}", legacyUrlBuilder);
 
         this.metadataDao = metadataDao;
-        this.urlBuilder = urlBuilder;
+        this.legacyUrlBuilder = legacyUrlBuilder;
     }
 
     @Transactional(readOnly = true)
@@ -51,7 +51,7 @@ public class MetadataServiceImpl implements MetadataService {
             resultDataSets.add(convertDataSet(dbDataSet, false));
         }
 
-        return new ResultPage<>(urlBuilder.datasetsPage(pageSize), resultDataSets, totalDataSets, pageNumber, pageSize);
+        return new ResultPage<>(legacyUrlBuilder.datasetsPage(pageSize), resultDataSets, totalDataSets, pageNumber, pageSize);
     }
 
     @Transactional(readOnly = true)
@@ -104,8 +104,8 @@ public class MetadataServiceImpl implements MetadataService {
         dataSet.setTitle(dbDataSet.getTitle());
         dataSet.setS3URL(dbDataSet.getS3URL());
         dataSet.setMetadata(dbDataSet.getMetadata());
-        dataSet.setUrl(urlBuilder.dataset(dataSet.getId()));
-        dataSet.setDimensionsUrl(urlBuilder.dimensions(dataSet.getId()));
+        dataSet.setUrl(legacyUrlBuilder.dataset(dataSet.getId()));
+        dataSet.setDimensionsUrl(legacyUrlBuilder.dimensions(dataSet.getId()));
 
         if (includeDimensions) {
             final List<DimensionMetadata> dimensions = metadataDao.findDimensionsForDataSet(dataSet.getId()).stream()
@@ -130,7 +130,7 @@ public class MetadataServiceImpl implements MetadataService {
 
         result.setId(dimension.getName());
         result.setName(dimension.getName());
-        result.setUrl(urlBuilder.dimension(dataSetId, dimension.getName()));
+        result.setUrl(legacyUrlBuilder.dimension(dataSetId, dimension.getName()));
         result.setHierarchical(hierarchy != null);
         result.setType(hierarchy == null ? "standard" : hierarchy.getType());
         result.setOptions(viewType.convertValues(dimension.getValues()));
@@ -144,7 +144,7 @@ public class MetadataServiceImpl implements MetadataService {
         dimension.setName(hierarchy.getName());
         dimension.setType(hierarchy.getType());
         dimension.setHierarchical(true);
-        dimension.setUrl(urlBuilder.hierarchy(hierarchy.getId()));
+        dimension.setUrl(legacyUrlBuilder.hierarchy(hierarchy.getId()));
 
         return dimension;
     }

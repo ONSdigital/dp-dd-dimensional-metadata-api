@@ -1,11 +1,10 @@
 package uk.co.onsdigital.discovery.metadata.api.service;
 
-import uk.co.onsdigital.discovery.metadata.api.dto.DimensionOption;
+import uk.co.onsdigital.discovery.metadata.api.legacy.dto.DimensionOption;
 import uk.co.onsdigital.discovery.model.DimensionValue;
 import uk.co.onsdigital.discovery.model.HierarchyEntry;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;

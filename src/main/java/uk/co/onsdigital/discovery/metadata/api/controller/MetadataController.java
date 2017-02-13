@@ -20,9 +20,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.annotation.RequestScope;
-import uk.co.onsdigital.discovery.metadata.api.dto.DataSet;
-import uk.co.onsdigital.discovery.metadata.api.dto.DimensionMetadata;
-import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
+import uk.co.onsdigital.discovery.metadata.api.legacy.dto.DataSet;
+import uk.co.onsdigital.discovery.metadata.api.legacy.dto.DimensionMetadata;
+import uk.co.onsdigital.discovery.metadata.api.legacy.dto.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.service.DimensionViewType;
@@ -57,26 +57,26 @@ public class MetadataController {
         return true;
     }
 
-    @GetMapping("/datasets")
+    @GetMapping("/versions")
     @CrossOrigin
     public ResultPage<DataSet> listAvailableDataSets(Pageable pageable) {
         // Ensure pageNumber and pageSize are both at least 1
         return metadataService.listAvailableDataSets(max(pageable.getPageNumber(), 1), max(pageable.getPageSize(), 1));
     }
 
-    @GetMapping("/datasets/{dataSetId}")
+    @GetMapping("/versions/{dataSetId}")
     @CrossOrigin
     public DataSet findDataSetById(@PathVariable String dataSetId) throws DataSetNotFoundException {
         return metadataService.findDataSetById(dataSetId);
     }
 
-    @GetMapping("/datasets/{dataSetId}/dimensions")
+    @GetMapping("/versions/{dataSetId}/dimensions")
     @CrossOrigin
     public List<DimensionMetadata> listDimensionsForDataSet(@PathVariable String dataSetId) throws DataSetNotFoundException {
         return metadataService.listDimensionsForDataSet(dataSetId);
     }
 
-    @GetMapping("/datasets/{dataSetId}/dimensions/{dimensionId}")
+    @GetMapping("/versions/{dataSetId}/dimensions/{dimensionId}")
     @CrossOrigin
     public DimensionMetadata findDimensionById(@PathVariable String dataSetId, @PathVariable String dimensionId,
                                                @RequestParam(name = "view", defaultValue = "list") String view)

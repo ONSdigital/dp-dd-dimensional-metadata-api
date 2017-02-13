@@ -1,8 +1,8 @@
 package uk.co.onsdigital.discovery.metadata.api.service;
 
-import uk.co.onsdigital.discovery.metadata.api.dto.DataSet;
-import uk.co.onsdigital.discovery.metadata.api.dto.DimensionMetadata;
-import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
+import uk.co.onsdigital.discovery.metadata.api.legacy.dto.DataSet;
+import uk.co.onsdigital.discovery.metadata.api.legacy.dto.DimensionMetadata;
+import uk.co.onsdigital.discovery.metadata.api.legacy.dto.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 

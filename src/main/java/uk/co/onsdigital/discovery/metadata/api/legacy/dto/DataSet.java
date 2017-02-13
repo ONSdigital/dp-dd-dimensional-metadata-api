@@ -1,4 +1,4 @@
-package uk.co.onsdigital.discovery.metadata.api.dto;
+package uk.co.onsdigital.discovery.metadata.api.legacy.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonRawValue;
