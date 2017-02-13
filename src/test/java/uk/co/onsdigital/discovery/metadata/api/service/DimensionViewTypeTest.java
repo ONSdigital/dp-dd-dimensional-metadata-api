@@ -75,6 +75,7 @@ public class DimensionViewTypeTest {
 
         assertThat(options).hasSize(values.size());
         assertThat(options).allMatch(option -> option.getChildren() == null);
+        assertThat(options).allMatch(option -> option.getName().equals(option.getCode()));
     }
 
     @Test
