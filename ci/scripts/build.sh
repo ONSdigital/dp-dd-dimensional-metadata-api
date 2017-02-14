@@ -1,7 +1,7 @@
 #!/bin/bash -eux
 
 pushd dp-dd-dimensional-metadata-api
-  mvn clean package dependency:copy-dependencies -DskipTests=true
+  mvn -U clean package -DskipTests=true
 popd
 
 cp -r dp-dd-dimensional-metadata-api/target/* target/
