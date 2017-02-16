@@ -10,16 +10,16 @@ import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundExcept
 import java.util.List;
 
 /**
- * The metadata service provides an API for retrieving available datasets and querying them for available dimensions.
+ * The metadata service provides an API for retrieving available dataresources and datasets and querying them for available dimensions.
  */
 public interface MetadataService {
 
     /**
-     * Return a page of datasets defined in the database.
+     * Return a page of dataresources defined in the database.
      *
      * @param pageNumber the number of the page to return, starting at 1.
      * @param pageSize the number of datasets to include in each page.
-     * @return all available datasets.
+     * @return all available dataresources.
      */
     ResultPage<DataResourceResult> listAvailableDataResources(int pageNumber, int pageSize);
 
@@ -41,6 +41,13 @@ public interface MetadataService {
      */
     DataSet findDataSetByUuid(String dataSetUuid) throws DataSetNotFoundException;
 
+    /**
+     * Find a particular dataresource by its ID and display its available editions and versions.
+     *
+     * @param dataResourceId the id of the dataresource to retrieve.
+     * @return the matching dataset.
+     * @throws DataSetNotFoundException if the dataset does not exist.
+     */
     DataResourceResult findDataResource(String dataResourceId) throws DataSetNotFoundException;
 
     /**

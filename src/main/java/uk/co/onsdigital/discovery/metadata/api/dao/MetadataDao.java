@@ -1,5 +1,6 @@
 package uk.co.onsdigital.discovery.metadata.api.dao;
 
+import uk.co.onsdigital.discovery.metadata.api.exception.DataResourceNotFoundExcecption;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.model.*;
 
@@ -37,7 +38,13 @@ public interface MetadataDao {
      */
     List<DataResource> findDataResourcesPage(int pageNumber, int pageSize);
 
-    DataResource findDataResource(String dataResourceId);
+    /**
+     * Find a particular dataresource by its id and list all the dimensional data set editions and versions it has.
+     * @param dataResourceId the dataresource id.
+     * @return the matching dataset if found.
+     * @throws DataResourceNotFoundExcecption if the dataset does not exist.
+     */
+    DataResource findDataResource(String dataResourceId) throws DataResourceNotFoundExcecption;
 
     /**
      * Find a particular dataset by UUID.

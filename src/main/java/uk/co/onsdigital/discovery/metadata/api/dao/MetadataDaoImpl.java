@@ -1,6 +1,7 @@
 package uk.co.onsdigital.discovery.metadata.api.dao;
 
 import org.springframework.stereotype.Repository;
+import uk.co.onsdigital.discovery.metadata.api.exception.DataResourceNotFoundExcecption;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.model.*;
 
@@ -44,10 +45,10 @@ public class MetadataDaoImpl implements MetadataDao {
                 .setFirstResult(firstPageOffset).setMaxResults(pageSize).getResultList();
     }
 
-    public DataResource findDataResource(String dataResourceId) {
+    public DataResource findDataResource(String dataResourceId) throws DataResourceNotFoundExcecption {
         final DataResource dataResource = entityManager.find(DataResource.class, dataResourceId);
         if (dataResource == null) {
-            throw new DataSetNotFoundException("No such dataset: " + dataResourceId);
+            throw new DataResourceNotFoundExcecption("No such dataResource: " + dataResourceId);
         }
         return dataResource;
     }

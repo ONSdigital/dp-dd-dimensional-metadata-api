@@ -130,7 +130,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     /**
-     * Converts a dataset from the database into an API {@link DataSet} object.
+     * Converts a dataset from the database into an API {@link DataSet} object. This is the legacy display.
      *
      * @param dbDataSet the dataset loaded from the database.
      * @param includeDimensions whether to include the dimensions in the output.
@@ -155,14 +155,21 @@ public class MetadataServiceImpl implements MetadataService {
         return dataSet;
     }
 
+    /**
+     * Converts a dataset from the database into an API {@link DimensionalDataSetResult} object. This is the new version.
+     * This includes the dataresource it belongs too and its edition and version.
+     *
+     * @param dbDataSet the dataset loaded from the database.
+     * @param includeDimensions whether to include the dimensions in the output.
+     * @return the {@link DimensionalDataSetResult} model populated with the metadata about the dataset.
+     */
     private DimensionalDataSetResult convertDataSet(final DimensionalDataSet dbDataSet, final boolean includeDimensions) {
         final DimensionalDataSetResult ddSet = new DimensionalDataSetResult();
         ddSet.setId(dbDataSet.getId().toString());
         ddSet.setDatasetId(dbDataSet.getDataResource().getId());
         ddSet.setTitle(dbDataSet.getTitle());
         ddSet.setS3URL(dbDataSet.getS3URL());
-        String metadata = defaultIfEmpty(dbDataSet.getMetadata(), "{}"); // Preference from frontend to return an empty object over null
-        ddSet.setMetadata(StringUtils.defaultIfEmpty(dbDataSet.getMetadata(), "{}"));
+        ddSet.setMetadata(defaultIfEmpty(dbDataSet.getMetadata(), "{}"));
         ddSet.setVersion(Integer.toString(dbDataSet.getMinorVersion()));
         ddSet.setEdition(dbDataSet.getMajorLabel());
         ddSet.setDatasetId(dbDataSet.getDataResource().getId());
@@ -178,6 +185,13 @@ public class MetadataServiceImpl implements MetadataService {
         return ddSet;
     }
 
+    /**
+     * Converts a dataresource from the database into an API {@link DataResourceResult} object. This includes all the
+     * datasets that belong to it under the respective editions and versions of them.
+     *
+     * @param dataResource the dataresource loaded from the database.
+     * @return the {@link DataResourceResult} model populated with the metadata about the dataset.
+     */
     private DataResourceResult convertDataResource(final DataResource dataResource) {
         final DataResourceResult drResult = new DataResourceResult();
         drResult.setDatasetId(dataResource.getId());
@@ -199,6 +213,10 @@ public class MetadataServiceImpl implements MetadataService {
         return drResult;
     }
 
+    // This is a terrible hack to list all the editions and dimensions.
+    // TODO: Once the metadata-editor decides to edit dataresources, it will change the schema and from there we can change
+    // this to reflect on new tables. As of now, the edition label is based on the major_label of the latest dataset that
+    // has a common major_version between them.
     private List<Edition> extractEditionAndValuesFromDimensionalDataSets(List<DimensionalDataSet> dimensionalDataSets) {
         HashMap<Integer, Edition> editionMap = new LinkedHashMap<>();
         for(DimensionalDataSet dds: dimensionalDataSets) {
