@@ -2,10 +2,7 @@ package uk.co.onsdigital.discovery.metadata.api.dao;
 
 import org.springframework.stereotype.Repository;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
-import uk.co.onsdigital.discovery.model.Dimension;
-import uk.co.onsdigital.discovery.model.DimensionalDataSet;
-import uk.co.onsdigital.discovery.model.Hierarchy;
-import uk.co.onsdigital.discovery.model.HierarchyEntry;
+import uk.co.onsdigital.discovery.model.*;
 
 import javax.persistence.*;
 import java.util.List;
@@ -28,14 +25,35 @@ public class MetadataDaoImpl implements MetadataDao {
     }
 
     @Override
-    public List<DimensionalDataSet> findDataSetsPage(int pageNumber, int pageSize) {
+    public long countDataResources() {
+        return entityManager.createNamedQuery("DataResource.count", Long.class).getSingleResult();
+    }
+
+    @Override
+    public List<DimensionalDataSet> findLegacyDataSetsPage(int pageNumber, int pageSize) {
         final int firstPageOffset = (pageNumber - 1) * pageSize;
         return entityManager.createNamedQuery("DimensionalDataSet.findAll", DimensionalDataSet.class)
                 .setFirstResult(firstPageOffset).setMaxResults(pageSize).getResultList();
     }
 
+
     @Override
-    public DimensionalDataSet findDataSetById(String dataSetId) throws DataSetNotFoundException {
+    public List<DataResource> findDataResourcesPage(int pageNumber, int pageSize) {
+        final int firstPageOffset = (pageNumber - 1) * pageSize;
+        return entityManager.createNamedQuery("DataResource.findAll", DataResource.class)
+                .setFirstResult(firstPageOffset).setMaxResults(pageSize).getResultList();
+    }
+
+    public DataResource findDataResource(String dataResourceId) {
+        final DataResource dataResource = entityManager.find(DataResource.class, dataResourceId);
+        if (dataResource == null) {
+            throw new DataSetNotFoundException("No such dataset: " + dataResourceId);
+        }
+        return dataResource;
+    }
+
+    @Override
+    public DimensionalDataSet findDataSetByUuid(String dataSetId) throws DataSetNotFoundException {
         final DimensionalDataSet dataSet = entityManager.find(DimensionalDataSet.class, UUID.fromString(dataSetId));
         if (dataSet == null) {
             throw new DataSetNotFoundException("No such dataset: " + dataSetId);
@@ -44,8 +62,26 @@ public class MetadataDaoImpl implements MetadataDao {
     }
 
     @Override
+    public DimensionalDataSet findDataSetByEditionAndVersion(String dataResourceId, String edition, int version) throws DataSetNotFoundException {
+        final DimensionalDataSet dataSet =
+                entityManager.createNamedQuery(DimensionalDataSet.FIND_BY_EDITION_VERSION, DimensionalDataSet.class)
+                        .setParameter(DimensionalDataSet.DATA_RESOURCE_PARAM, dataResourceId)
+                        .setParameter(DimensionalDataSet.EDITION_PARAM, edition)
+                        .setParameter(DimensionalDataSet.VERSION_PARAM, version)
+                        .getSingleResult();
+        if (dataSet == null) {
+            throw new DataSetNotFoundException("No such dataset: " + edition);
+        }
+        return dataSet;    }
+
+    @Override
     public List<Dimension> findDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException {
-        return findDataSetById(dataSetId).getDimensions();
+        return findDataSetByUuid(dataSetId).getDimensions();
+    }
+
+    @Override
+    public List<Dimension> findDimensionsForDataSet(String dataResourceId, String edition, int version) throws DataSetNotFoundException {
+        return findDataSetByEditionAndVersion(dataResourceId, edition, version).getDimensions();
     }
 
     @Override

@@ -41,13 +41,13 @@ public class MetadataDaoTest {
         when(mockQuery.setMaxResults(10)).thenReturn(mockQuery);
         when(mockQuery.getResultList()).thenReturn(dataSets);
 
-        List<DimensionalDataSet> result = metadataDao.findDataSetsPage(1, 10);
+        List<DimensionalDataSet> result = metadataDao.findLegacyDataSetsPage(1, 10);
         assertThat(result).isEqualTo(dataSets);
     }
 
     @Test(expectedExceptions = DataSetNotFoundException.class)
     public void shouldFailIfDataSetNotFound() throws Exception {
-        metadataDao.findDataSetById(UUID.randomUUID().toString());
+        metadataDao.findDataSetByUuid(UUID.randomUUID().toString());
     }
 
     @Test
@@ -57,12 +57,12 @@ public class MetadataDaoTest {
 
         when(mockEntityManager.find(DimensionalDataSet.class, dataSetId)).thenReturn(dataSet);
 
-        final DimensionalDataSet result = metadataDao.findDataSetById(dataSetId.toString());
+        final DimensionalDataSet result = metadataDao.findDataSetByUuid(dataSetId.toString());
         assertThat(result).isEqualTo(dataSet);
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void shouldRejectInvalidDataSetIds() throws Exception {
-        metadataDao.findDataSetById("not a uuid");
+        metadataDao.findDataSetByUuid("not a uuid");
     }
 }

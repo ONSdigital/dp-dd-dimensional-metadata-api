@@ -1,10 +1,7 @@
 package uk.co.onsdigital.discovery.metadata.api.dao;
 
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
-import uk.co.onsdigital.discovery.model.Dimension;
-import uk.co.onsdigital.discovery.model.DimensionalDataSet;
-import uk.co.onsdigital.discovery.model.Hierarchy;
-import uk.co.onsdigital.discovery.model.HierarchyEntry;
+import uk.co.onsdigital.discovery.model.*;
 
 import java.util.List;
 
@@ -20,6 +17,8 @@ public interface MetadataDao {
      */
     long countDataSets();
 
+    long countDataResources();
+
     /**
      * Find a page of available datasets present in the database.
      *
@@ -27,24 +26,54 @@ public interface MetadataDao {
      * @param pageSize the number of results to include in a page.
      * @return a list of available datasets for the given pageNumber and pageSize.
      */
-    List<DimensionalDataSet> findDataSetsPage(int pageNumber, int pageSize);
+    List<DimensionalDataSet> findLegacyDataSetsPage(int pageNumber, int pageSize);
 
     /**
-     * Find a particular dataset by id.
+     * Find a page of available dataresources (datasets on the front-end) present in the database.
+     *
+     * @param pageNumber the number of the page to get, starting from 1.
+     * @param pageSize the number of results to include in a page.
+     * @return a list of available dataresources for the given pageNumber and pageSize.
+     */
+    List<DataResource> findDataResourcesPage(int pageNumber, int pageSize);
+
+    DataResource findDataResource(String dataResourceId);
+
+    /**
+     * Find a particular dataset by UUID.
      * @param dataSetId the dataset id.
      * @return the matching dataset if found.
      * @throws DataSetNotFoundException if the dataset does not exist.
      */
-    DimensionalDataSet findDataSetById(String dataSetId) throws DataSetNotFoundException;
+    DimensionalDataSet findDataSetByUuid(String dataSetId) throws DataSetNotFoundException;
 
     /**
-     * Load the dimensions for a given dataset.
+     * Find a particular dataset by edition and version.
+     * @param edition the edition of the dimensional dataset.
+     * @param version the version of the dimensional dataset.
+     * @return the matching dataset if found.
+     * @throws DataSetNotFoundException if the dataset does not exist.
+     */
+    DimensionalDataSet findDataSetByEditionAndVersion(String dataResourceId, String edition, int version) throws DataSetNotFoundException;
+
+    /**
+     * Load the dimensions for a given dataset based on UUID.
      *
      * @param dataSetId the id of the dataset to load the dimensions for.
      * @return the dimensions defined in the given dataset.
      * @throws DataSetNotFoundException if the dataset does not exist.
      */
     List<Dimension> findDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException;
+
+    /**
+     * Load the dimensions for a given dataset based on edition and version.
+     *
+     * @param edition the edition of the dimensional dataset.
+     * @param version the version of the dimensional dataset.
+     * @return the dimensions defined in the given dataset.
+     * @throws DataSetNotFoundException if the dataset does not exist.
+     */
+    List<Dimension> findDimensionsForDataSet(String dataResourceId, String edition, int version) throws DataSetNotFoundException;
 
     /**
      * List all hierarchies defined in the database.

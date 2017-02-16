@@ -5,8 +5,8 @@ CONFIG_BUCKET=
 ECR_REPOSITORY_URI=
 GIT_COMMIT=
 
-INSTANCE=$(curl -s http://instance-data/latest/meta-data/instance-id)
-CONFIG=$(aws --region $AWS_REGION ec2 describe-tags --filters "Name=resource-id,Values=$INSTANCE" "Name=key,Values=Configuration" --output text | awk '{print $5}')
+INSTANCE=$(curl -s http://instance-data/latest/meta-data/instance-datasetId)
+CONFIG=$(aws --region $AWS_REGION ec2 describe-tags --filters "Name=resource-datasetId,Values=$INSTANCE" "Name=key,Values=Configuration" --output text | awk '{print $5}')
 
 if [[ $DEPLOYMENT_GROUP_NAME =~ [a-z]+-publishing ]]; then
   CONFIG_DIRECTORY=publishing

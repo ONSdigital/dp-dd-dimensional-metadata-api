@@ -7,27 +7,29 @@ import org.springframework.web.util.UriTemplate;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Specialised URL builder service to centralise construction of external URLs on the versions path.
+ * Specialised URL builder service to centralise construction of external URLs.
  */
 @Service
-public class LegacyUrlBuilder {
+public class UrlBuilder {
     static final int MAX_PAGE_SIZE = 1000;
 
     private final String baseUrl;
 
     private final UriTemplate pageTemplate;
     private final UriTemplate dataSetTemplate;
+    private final UriTemplate dimensionalDataSetTemplate;
     private final UriTemplate dimensionsTemplate;
     private final UriTemplate dimensionTemplate;
     private final UriTemplate hierarchyTemplate;
 
-    LegacyUrlBuilder(@Value("#{systemEnvironment['BASE_URL'] ?: 'http://localhost:20099'}") String baseUrl) {
+    UrlBuilder(@Value("#{systemEnvironment['BASE_URL'] ?: 'http://localhost:20099'}") String baseUrl) {
         this.baseUrl = requireNonNull(baseUrl);
 
-        pageTemplate = new UriTemplate(baseUrl + "/versions?page={page}&size={size}");
-        dataSetTemplate = new UriTemplate(baseUrl + "/versions/{dataSetId}");
-        dimensionsTemplate = new UriTemplate(baseUrl + "/versions/{dataSetId}/dimensions");
-        dimensionTemplate = new UriTemplate(baseUrl + "/versions/{dataSetId}/dimensions/{dimensionId}");
+        pageTemplate = new UriTemplate(baseUrl + "/datasets?page={page}&size={size}");
+        dataSetTemplate = new UriTemplate(baseUrl + "/datasets/{dataSetId}");
+        dimensionalDataSetTemplate = new UriTemplate(baseUrl + "/datasets/{dataSetId}/editions/{edition}/versions/{version}");
+        dimensionsTemplate = new UriTemplate(baseUrl + "/datasets/{dataSetId}/editions/{edition}/versions/{version}/dimensions");
+        dimensionTemplate = new UriTemplate(baseUrl + "/datasets/{dataSetId}/editions/{edition}/versions/{version}/dimensions/{dimensionId}");
         hierarchyTemplate = new UriTemplate(baseUrl + "/hierarchies/{hierarchyId}");
     }
 
@@ -58,13 +60,25 @@ public class LegacyUrlBuilder {
     }
 
     /**
+     * Constructs a link to a particular dataset.
+     *
+     * @param dataResourceId the id of the dataresource.
+     * @param edition the edition.
+     * @param version the version.
+     * @return an external link to the given dataset.
+     */
+    public String dimensionalDataSet(String dataResourceId, String edition, int version) {
+        return dimensionalDataSetTemplate.expand(dataResourceId, edition, version).toString();
+    }
+
+    /**
      * Constructs a link to the dimensions of a given dataset.
      *
      * @param dataSetId the dataset id.
      * @return an external link to the dimensions page for the dataset.
      */
-    public String dimensions(String dataSetId) {
-        return dimensionsTemplate.expand(dataSetId).toString();
+    public String dimensions(String dataSetId, String edition, String version) {
+        return dimensionsTemplate.expand(dataSetId, edition, version).toString();
     }
 
     /**
@@ -74,8 +88,8 @@ public class LegacyUrlBuilder {
      * @param dimensionId the id of the dimension.
      * @return a link to the given dimension in the given dataset.
      */
-    public String dimension(String dataSetId, String dimensionId) {
-        return dimensionTemplate.expand(dataSetId, dimensionId).toString();
+    public String dimension(String dataSetId, String edition, int version, String dimensionId) {
+        return dimensionTemplate.expand(dataSetId, edition, version, dimensionId).toString();
     }
 
     /**
