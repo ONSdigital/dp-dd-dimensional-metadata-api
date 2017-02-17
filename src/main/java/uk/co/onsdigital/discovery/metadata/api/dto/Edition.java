@@ -31,4 +31,13 @@ public class Edition {
     public void setVersions(List<Integer> versions) {
         this.versions = versions;
     }
+
+    @Override
+    public String toString() {
+        return "Edition{" +
+                "id='" + id + '\'' +
+                ", label='" + label + '\'' +
+                ", versions='" + versions +
+                '}';
+    }
 }

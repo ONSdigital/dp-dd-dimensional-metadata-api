@@ -64,16 +64,21 @@ public class MetadataDaoImpl implements MetadataDao {
 
     @Override
     public DimensionalDataSet findDataSetByEditionAndVersion(String dataResourceId, String edition, int version) throws DataSetNotFoundException {
-        final DimensionalDataSet dataSet =
-                entityManager.createNamedQuery(DimensionalDataSet.FIND_BY_EDITION_VERSION, DimensionalDataSet.class)
-                        .setParameter(DimensionalDataSet.DATA_RESOURCE_PARAM, dataResourceId)
-                        .setParameter(DimensionalDataSet.EDITION_PARAM, edition)
-                        .setParameter(DimensionalDataSet.VERSION_PARAM, version)
-                        .getSingleResult();
-        if (dataSet == null) {
+        try {
+            final DimensionalDataSet dataSet =
+                    entityManager.createNamedQuery(DimensionalDataSet.FIND_BY_EDITION_VERSION, DimensionalDataSet.class)
+                            .setParameter(DimensionalDataSet.DATA_RESOURCE_PARAM, dataResourceId)
+                            .setParameter(DimensionalDataSet.EDITION_PARAM, edition)
+                            .setParameter(DimensionalDataSet.VERSION_PARAM, version)
+                            .getSingleResult();
+            if (dataSet == null) {
+                throw new DataSetNotFoundException("No such dataset: " + edition);
+            }
+            return dataSet;
+        } catch (NoResultException e) {
             throw new DataSetNotFoundException("No such dataset: " + edition);
         }
-        return dataSet;    }
+    }
 
     @Override
     public List<Dimension> findDimensionsForDataSet(String dataSetId) throws DataSetNotFoundException {

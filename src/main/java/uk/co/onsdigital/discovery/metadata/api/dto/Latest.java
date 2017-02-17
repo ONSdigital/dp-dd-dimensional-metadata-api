@@ -51,4 +51,15 @@ public class Latest {
     public void setUrl(String url) {
         this.url = url;
     }
+
+    @Override
+    public String toString() {
+        return "Latest {" +
+                "edition='" + edition + '\'' +
+                ", version='" + version + '\'' +
+                ", title='" + title + '\'' +
+                ", url='" + url + '\'' +
+                ", metadata=" + metadata +
+                '}';
+    }
 }
