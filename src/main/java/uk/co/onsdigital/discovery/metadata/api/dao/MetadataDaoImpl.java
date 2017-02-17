@@ -71,9 +71,6 @@ public class MetadataDaoImpl implements MetadataDao {
                             .setParameter(DimensionalDataSet.EDITION_PARAM, edition)
                             .setParameter(DimensionalDataSet.VERSION_PARAM, version)
                             .getSingleResult();
-            if (dataSet == null) {
-                throw new DataSetNotFoundException("No such dataset: " + edition);
-            }
             return dataSet;
         } catch (NoResultException e) {
             throw new DataSetNotFoundException("No such dataset: " + edition);
