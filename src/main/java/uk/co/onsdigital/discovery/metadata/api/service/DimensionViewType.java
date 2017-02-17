@@ -1,6 +1,6 @@
 package uk.co.onsdigital.discovery.metadata.api.service;
 
-import uk.co.onsdigital.discovery.metadata.api.legacy.dto.DimensionOption;
+import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionOption;
 import uk.co.onsdigital.discovery.model.DimensionValue;
 import uk.co.onsdigital.discovery.model.HierarchyEntry;
 

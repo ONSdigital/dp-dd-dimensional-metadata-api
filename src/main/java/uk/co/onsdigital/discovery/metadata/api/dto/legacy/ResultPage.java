@@ -1,4 +1,4 @@
-package uk.co.onsdigital.discovery.metadata.api.legacy.dto;
+package uk.co.onsdigital.discovery.metadata.api.dto.legacy;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;

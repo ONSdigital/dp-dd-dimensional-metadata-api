@@ -1,7 +1,8 @@
-package uk.co.onsdigital.discovery.metadata.api.legacy.dto;
+package uk.co.onsdigital.discovery.metadata.api.dto.legacy;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonRawValue;
+import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionMetadata;
 
 import java.util.Collections;
 import java.util.List;
@@ -12,13 +13,13 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class DataSet {
 
-    private String id;
-    private String s3URL;
-    private String title;
-    private String url;
-    private String metadata;
-    private List<DimensionMetadata> dimensions = Collections.emptyList();
-    private String dimensionsUrl;
+    protected String id;
+    protected String s3URL;
+    protected String title;
+    protected String url;
+    protected String metadata;
+    protected List<DimensionMetadata> dimensions = Collections.emptyList();
+    protected String dimensionsUrl;
 
     public String getId() {
         return id;

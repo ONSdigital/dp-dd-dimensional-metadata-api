@@ -5,10 +5,10 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
-import uk.co.onsdigital.discovery.metadata.api.legacy.dto.DataSet;
-import uk.co.onsdigital.discovery.metadata.api.legacy.dto.DimensionMetadata;
-import uk.co.onsdigital.discovery.metadata.api.legacy.dto.DimensionOption;
-import uk.co.onsdigital.discovery.metadata.api.legacy.dto.ResultPage;
+import uk.co.onsdigital.discovery.metadata.api.dto.legacy.DataSet;
+import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionMetadata;
+import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionOption;
+import uk.co.onsdigital.discovery.metadata.api.dto.legacy.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 import uk.co.onsdigital.discovery.model.Dimension;
@@ -42,7 +42,7 @@ public class MetadataServiceTest {
     @BeforeMethod
     public void createMetadataService() {
         MockitoAnnotations.initMocks(this);
-        metadataService = new MetadataServiceImpl(mockDao, new LegacyUrlBuilder(BASE_URL));
+        metadataService = new MetadataServiceImpl(mockDao, new UrlBuilder(BASE_URL), new LegacyUrlBuilder(BASE_URL));
     }
 
     @Test
@@ -53,10 +53,10 @@ public class MetadataServiceTest {
                 dbDataSet(UUID.randomUUID(), "test 1 title", "test 1 description"),
                 dbDataSet(UUID.randomUUID(), "test 2 title", "test 2 description"));
         long total = 342L;
-        when(mockDao.findDataSetsPage(pageNumber, resultPerPage)).thenReturn(dbDataSets);
+        when(mockDao.findLegacyDataSetsPage(pageNumber, resultPerPage)).thenReturn(dbDataSets);
         when(mockDao.countDataSets()).thenReturn(total);
 
-        ResultPage<DataSet> result = metadataService.listAvailableDataSets(pageNumber, resultPerPage);
+        ResultPage<DataSet> result = metadataService.listAvailableVersions(pageNumber, resultPerPage);
 
         assertThat(result).isNotNull()
                 .hasFieldOrPropertyWithValue("total", total)
@@ -69,9 +69,9 @@ public class MetadataServiceTest {
 
     @Test
     public void shouldConstructCorrectURLs() throws Exception {
-        when(mockDao.findDataSetsPage(1, 5)).thenReturn(singletonList(dbDataSet(UUID.fromString(DATASET_ID), "", "")));
+        when(mockDao.findLegacyDataSetsPage(1, 5)).thenReturn(singletonList(dbDataSet(UUID.fromString(DATASET_ID), "", "")));
 
-        List<DataSet> result = metadataService.listAvailableDataSets(1, 5).getItems();
+        List<DataSet> result = metadataService.listAvailableVersions(1, 5).getItems();
 
         assertThat(result).hasSize(1);
         assertThat(result.iterator().next().getUrl()).isEqualTo(BASE_URL + "/versions/" + DATASET_ID);
@@ -83,9 +83,9 @@ public class MetadataServiceTest {
         String title = "test title";
         String description = "test description";
         DimensionalDataSet dbDataSet = dbDataSet(dataSetId, title, description);
-        when(mockDao.findDataSetsPage(1, 10)).thenReturn(singletonList(dbDataSet));
+        when(mockDao.findLegacyDataSetsPage(1, 10)).thenReturn(singletonList(dbDataSet));
 
-        List<DataSet> result = metadataService.listAvailableDataSets(1, 10).getItems();
+        List<DataSet> result = metadataService.listAvailableVersions(1, 10).getItems();
 
         assertThat(result).hasSize(1);
         DataSet dataSet = result.iterator().next();
@@ -98,25 +98,25 @@ public class MetadataServiceTest {
         String title = "test title";
         String description = "test description";
         DimensionalDataSet dbDataSet = dbDataSet(dataSetId, title, description);
-        when(mockDao.findDataSetById(dataSetId.toString())).thenReturn(dbDataSet);
+        when(mockDao.findDataSetByUuid(dataSetId.toString())).thenReturn(dbDataSet);
 
-        DataSet result = metadataService.findDataSetById(dataSetId.toString());
+        DataSet result = metadataService.findDataSetByUuid(dataSetId.toString());
 
         assertDataSetEqualsDbModel(result, dbDataSet);
     }
 
     @Test(expectedExceptions = DataSetNotFoundException.class)
     public void shouldFailIfDataSetNotFound() throws Exception {
-        when(mockDao.findDataSetById(DATASET_ID)).thenThrow(new DataSetNotFoundException("test"));
+        when(mockDao.findDataSetByUuid(DATASET_ID)).thenThrow(new DataSetNotFoundException("test"));
 
-        metadataService.findDataSetById(DATASET_ID);
+        metadataService.findDataSetByUuid(DATASET_ID);
     }
 
     @Test(expectedExceptions = DataSetNotFoundException.class)
     public void shouldFailIfDataSetNotFoundForDimension() throws Exception {
         when(mockDao.findDimensionsForDataSet(DATASET_ID)).thenThrow(new DataSetNotFoundException(""));
 
-        metadataService.findDimensionById(DATASET_ID, "any", DimensionViewType.LIST);
+        metadataService.findDimensionByIdWithDatasetUuid(DATASET_ID, "any", DimensionViewType.LIST);
     }
 
     @Test(expectedExceptions = DimensionNotFoundException.class)
@@ -124,7 +124,7 @@ public class MetadataServiceTest {
         String dimensionId = "testDimension";
         when(mockDao.findDimensionsForDataSet(DATASET_ID)).thenReturn(Collections.emptyList());
 
-        metadataService.findDimensionById(DATASET_ID, dimensionId, DimensionViewType.LIST);
+        metadataService.findDimensionByIdWithDatasetUuid(DATASET_ID, dimensionId, DimensionViewType.LIST);
     }
 
     @Test
@@ -145,7 +145,7 @@ public class MetadataServiceTest {
 
         when(mockDao.findDimensionsForDataSet(DATASET_ID)).thenReturn(Arrays.asList(dim1, dim2));
 
-        List<DimensionMetadata> result = metadataService.listDimensionsForDataSet(DATASET_ID);
+        List<DimensionMetadata> result = metadataService.listDimensionsForDataSetUuid(DATASET_ID);
         assertThat(result).hasSize(2);
         DimensionMetadata dimension1 = result.get(0);
         DimensionMetadata dimension2 = result.get(1);
@@ -168,7 +168,7 @@ public class MetadataServiceTest {
     public void shouldFailToListDimensionsIfDataSetNotFound() throws Exception {
         when(mockDao.findDimensionsForDataSet(DATASET_ID)).thenThrow(new DataSetNotFoundException(""));
 
-        metadataService.listDimensionsForDataSet(DATASET_ID);
+        metadataService.listDimensionsForDataSetUuid(DATASET_ID);
     }
 
     @Test
