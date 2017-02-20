@@ -14,6 +14,7 @@ public class DataResourceResult {
 
     private String datasetId;
     private Latest latest;
+    private String metadata;
     private List<Edition> editions;
 
     public Latest getLatest() {
@@ -40,12 +41,22 @@ public class DataResourceResult {
         this.datasetId = datasetId;
     }
 
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
+    }
+
+    @JsonRawValue
+    public String getMetadata() {
+        return metadata;
+    }
+
     @Override
     public String toString() {
         return "DataResourceResult{" +
                 "datasetId='" + datasetId + '\'' +
                 ", latest='" + latest + '\'' +
-                ", editions=" + editions +
+                ", editions=" + editions + '\'' +
+                ", metadata=" + metadata +
                 '}';
     }
 }

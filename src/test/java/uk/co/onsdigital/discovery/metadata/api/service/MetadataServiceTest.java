@@ -8,7 +8,7 @@ import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
 import uk.co.onsdigital.discovery.metadata.api.dto.legacy.DataSet;
 import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionMetadata;
 import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionOption;
-import uk.co.onsdigital.discovery.metadata.api.dto.legacy.ResultPage;
+import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 import uk.co.onsdigital.discovery.model.Dimension;
@@ -56,7 +56,7 @@ public class MetadataServiceTest {
         when(mockDao.findLegacyDataSetsPage(pageNumber, resultPerPage)).thenReturn(dbDataSets);
         when(mockDao.countDataSets()).thenReturn(total);
 
-        ResultPage<DataSet> result = metadataService.listAvailableVersions(pageNumber, resultPerPage);
+        LegacyResultPage<DataSet> result = metadataService.listAvailableVersions(pageNumber, resultPerPage);
 
         assertThat(result).isNotNull()
                 .hasFieldOrPropertyWithValue("total", total)
