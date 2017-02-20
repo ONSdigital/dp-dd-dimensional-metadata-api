@@ -21,9 +21,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.annotation.RequestScope;
 import uk.co.onsdigital.discovery.metadata.api.dto.DataResourceResult;
+import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.dto.legacy.DataSet;
 import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionMetadata;
-import uk.co.onsdigital.discovery.metadata.api.dto.legacy.ResultPage;
+import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.service.DimensionViewType;
@@ -67,7 +68,7 @@ public class MetadataController {
 
     @GetMapping("/versions")
     @CrossOrigin
-    public ResultPage<DataSet> listAvailableDataSets(Pageable pageable) {
+    public LegacyResultPage<DataSet> listAvailableDataSets(Pageable pageable) {
         // Ensure pageNumber and pageSize are both at least 1
         return metadataService.listAvailableVersions(max(pageable.getPageNumber(), 1), max(pageable.getPageSize(), 1));
     }

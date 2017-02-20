@@ -8,14 +8,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
-import uk.co.onsdigital.discovery.metadata.api.dto.DataResourceResult;
-import uk.co.onsdigital.discovery.metadata.api.dto.DimensionalDataSetResult;
-import uk.co.onsdigital.discovery.metadata.api.dto.Edition;
-import uk.co.onsdigital.discovery.metadata.api.dto.Latest;
+import uk.co.onsdigital.discovery.metadata.api.dto.*;
 import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionMetadata;
 import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionOption;
 import uk.co.onsdigital.discovery.metadata.api.dto.legacy.DataSet;
-import uk.co.onsdigital.discovery.metadata.api.dto.legacy.ResultPage;
+import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 import uk.co.onsdigital.discovery.model.*;
@@ -54,11 +51,11 @@ public class MetadataServiceImpl implements MetadataService {
             resultDataSets.add(convertDataResource(dataResource));
         }
 
-        return new ResultPage<>(legacyUrlBuilder.datasetsPage(pageSize), resultDataSets, totalDataSets, pageNumber, pageSize);
+        return new ResultPage<>(urlBuilder.datasetsPage(pageSize), resultDataSets, totalDataSets, pageNumber, pageSize);
     }
 
     @Transactional(readOnly = true)
-    public ResultPage<DataSet> listAvailableVersions(int pageNumber, int pageSize) {
+    public LegacyResultPage<DataSet> listAvailableVersions(int pageNumber, int pageSize) {
         final long totalDataSets = metadataDao.countDataSets();
         final List<DimensionalDataSet> dbDataSets = metadataDao.findLegacyDataSetsPage(pageNumber, pageSize);
         final List<DataSet> resultDataSets = new ArrayList<>(dbDataSets.size());
@@ -67,7 +64,7 @@ public class MetadataServiceImpl implements MetadataService {
             resultDataSets.add(legacyConvertDataSet(dbDataSet, false));
         }
 
-        return new ResultPage<>(legacyUrlBuilder.datasetsPage(pageSize), resultDataSets, totalDataSets, pageNumber, pageSize);
+        return new LegacyResultPage<>(legacyUrlBuilder.datasetsPage(pageSize), resultDataSets, totalDataSets, pageNumber, pageSize);
     }
 
     @Transactional(readOnly = true)
@@ -195,6 +192,7 @@ public class MetadataServiceImpl implements MetadataService {
     private DataResourceResult convertDataResource(final DataResource dataResource) {
         final DataResourceResult drResult = new DataResourceResult();
         drResult.setDatasetId(dataResource.getId());
+        drResult.setMetadata(defaultIfEmpty(dataResource.getMetadata(), "{}"));
         final Latest latest = new Latest();
         final List<DimensionalDataSet> dds = dataResource.getDimensionalDataSets();
         if (dds.size() == 0) {
