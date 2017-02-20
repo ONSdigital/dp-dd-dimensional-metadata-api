@@ -73,7 +73,7 @@ public class ResultPage<T> {
 
     @Override
     public String toString() {
-        return "LegacyResultPage{" +
+        return "ResultPage{" +
                 "page=" + page +
                 '}';
     }
