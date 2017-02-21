@@ -193,6 +193,7 @@ public class MetadataServiceImpl implements MetadataService {
         final DataResourceResult drResult = new DataResourceResult();
         drResult.setDatasetId(dataResource.getId());
         drResult.setMetadata(defaultIfEmpty(dataResource.getMetadata(), "{}"));
+        drResult.setTitle(dataResource.getTitle());
         final Latest latest = new Latest();
         final List<DimensionalDataSet> dds = dataResource.getDimensionalDataSets();
         if (dds.size() == 0) {

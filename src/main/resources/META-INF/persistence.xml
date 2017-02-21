@@ -33,7 +33,7 @@
         <properties>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/data_discovery" />
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" />
-            <property name="javax.persistence.jdbc.user" value="data_discovery" />
+            <property name="javax.persistence.jdbc.user" value="dd_api" />
             <property name="javax.persistence.jdbc.password" value="password" />
             <property name="eclipselink.logging.level" value="INFO" />
             <!-- Disable the EclipseLink shared entity cache as we expect another service (the loader) to be changing
