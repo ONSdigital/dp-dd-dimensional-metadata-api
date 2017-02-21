@@ -16,6 +16,7 @@ public class DataResourceResult {
     private Latest latest;
     private String metadata;
     private List<Edition> editions;
+    private String title;
 
     public Latest getLatest() {
         return latest;
@@ -58,5 +59,13 @@ public class DataResourceResult {
                 ", editions=" + editions + '\'' +
                 ", metadata=" + metadata +
                 '}';
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }
