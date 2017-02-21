@@ -249,14 +249,14 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     private DimensionMetadata setDimensionWithUrl(Dimension dimension, DimensionViewType viewType, String url) {
-        Hierarchy hierarchy = dimension.getHierarchy();
         DimensionMetadata result = new DimensionMetadata();
 
         result.setId(dimension.getName());
         result.setName(dimension.getName());
         result.setUrl(url);
-        result.setHierarchical(hierarchy != null);
-        result.setType(hierarchy == null ? "standard" : hierarchy.getType());
+
+        result.setHierarchical(dimension.isHierarchical());
+        result.setType(dimension.getType());
         result.setOptions(viewType.convertValues(dimension.getValues()));
 
         return result;
