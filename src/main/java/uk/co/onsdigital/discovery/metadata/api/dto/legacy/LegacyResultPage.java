@@ -15,11 +15,11 @@ import java.util.List;
  */
 @JsonPropertyOrder({"items", "first", "prev", "next", "last"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ResultPage<T> {
+public class LegacyResultPage<T> {
     private final Page<T> page;
     private final LegacyUrlBuilder.PageUrlTemplate pageUrlTemplate;
 
-    public ResultPage(LegacyUrlBuilder.PageUrlTemplate pageUrlTemplate, List<T> content, long total, int pageNumber, int pageSize) {
+    public LegacyResultPage(LegacyUrlBuilder.PageUrlTemplate pageUrlTemplate, List<T> content, long total, int pageNumber, int pageSize) {
         this.pageUrlTemplate = pageUrlTemplate;
         Pageable pageable = new PageRequest(pageNumber-1, pageSize);
         this.page = new PageImpl<>(content, pageable, total);
@@ -72,7 +72,7 @@ public class ResultPage<T> {
 
     @Override
     public String toString() {
-        return "ResultPage{" +
+        return "LegacyResultPage{" +
                 "page=" + page +
                 '}';
     }

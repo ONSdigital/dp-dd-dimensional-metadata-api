@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import uk.co.onsdigital.discovery.metadata.api.service.LegacyUrlBuilder;
+import uk.co.onsdigital.discovery.metadata.api.service.UrlBuilder;
 
 import java.util.List;
 
@@ -17,9 +18,9 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResultPage<T> {
     private final Page<T> page;
-    private final LegacyUrlBuilder.PageUrlTemplate pageUrlTemplate;
+    private final UrlBuilder.PageUrlTemplate pageUrlTemplate;
 
-    public ResultPage(LegacyUrlBuilder.PageUrlTemplate pageUrlTemplate, List<T> content, long total, int pageNumber, int pageSize) {
+    public ResultPage(UrlBuilder.PageUrlTemplate pageUrlTemplate, List<T> content, long total, int pageNumber, int pageSize) {
         this.pageUrlTemplate = pageUrlTemplate;
         Pageable pageable = new PageRequest(pageNumber-1, pageSize);
         this.page = new PageImpl<>(content, pageable, total);

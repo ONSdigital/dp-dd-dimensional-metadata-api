@@ -1,9 +1,10 @@
 package uk.co.onsdigital.discovery.metadata.api.service;
 
 import uk.co.onsdigital.discovery.metadata.api.dto.DataResourceResult;
+import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.dto.legacy.DataSet;
 import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionMetadata;
-import uk.co.onsdigital.discovery.metadata.api.dto.legacy.ResultPage;
+import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 
@@ -21,7 +22,7 @@ public interface MetadataService {
      * @param pageSize the number of datasets to include in each page.
      * @return all available dataresources.
      */
-    ResultPage<DataResourceResult> listAvailableDataResources(int pageNumber, int pageSize);
+    ResultPage listAvailableDataResources(int pageNumber, int pageSize);
 
     /**
      * Return a page of datasets defined in the database. This is the **legacy** version.
@@ -30,7 +31,7 @@ public interface MetadataService {
      * @param pageSize the number of datasets to include in each page.
      * @return all available datasets.
      */
-    ResultPage<DataSet> listAvailableVersions(int pageNumber, int pageSize);
+    LegacyResultPage<DataSet> listAvailableVersions(int pageNumber, int pageSize);
 
     /**
      * Find a particular dataset by UUID.

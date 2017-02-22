@@ -21,7 +21,7 @@ following environment variables to configure the system:
  * `BASE_URL`: Base URL to use when constructing links to resources. Defaults to `http://localhost:20099`. NB: this
  should be the public URL that the API is available from if it is behind a load-balancer/proxy etc.
  * `SERVER_PORT`: The port to listen on. Defaults to `20099`.
- * `DB_USER`: The database username. Defaults to `data_discovery`.
+ * `DB_USER`: The database username. Defaults to `dd_api`.
  * `DB_PASSWORD`: The database password. Defaults to `password`.
  * `DB_URL`: The database JDBC URL. Defaults to `jdbc:postgresql://localhost:5432/data_discovery`.
  * `DB_DRIVER`: The JDBC driver to load. Defaults to `org.postgresql.Driver`.
