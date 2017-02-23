@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -47,7 +48,7 @@ public enum DimensionViewType {
             // Map from dimension value IDs to the created dimension option, for de-duplication
             final Map<UUID, DimensionOption> options = new LinkedHashMap<>();
             // Set to collect the top-level elements in the hierarchy
-            final Set<DimensionOption> roots = new LinkedHashSet<>();
+            final Set<DimensionOption> roots = new TreeSet<>();
 
             for (DimensionValue value : values) {
                 DimensionOption option = option(options, value, value.getHierarchyEntry());
