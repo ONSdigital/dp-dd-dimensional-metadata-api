@@ -39,6 +39,11 @@
     <dependencies>
         <dependency>
             <groupId>com.github.ONSdigital</groupId>
+            <artifactId>dp-dd-request-filter</artifactId>
+            <version>v1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ONSdigital</groupId>
             <artifactId>dp-dd-backend-model</artifactId>
             <version>v1.0.2</version>
         </dependency>

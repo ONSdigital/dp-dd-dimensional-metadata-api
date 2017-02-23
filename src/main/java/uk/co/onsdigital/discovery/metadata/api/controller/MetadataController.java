@@ -31,6 +31,8 @@ import uk.co.onsdigital.discovery.metadata.api.service.DimensionViewType;
 import uk.co.onsdigital.discovery.metadata.api.service.MetadataService;
 
 import javax.persistence.*;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +45,7 @@ import static java.util.Arrays.asList;
  */
 @RestController
 @SpringBootApplication
-@ComponentScan(basePackages = "uk.co.onsdigital.discovery.metadata.api")
+@ComponentScan(basePackages = "uk.co.onsdigital")
 public class MetadataController {
     private static final Logger logger = LoggerFactory.getLogger(MetadataController.class);
 
@@ -56,6 +58,7 @@ public class MetadataController {
 
     @GetMapping("/healthcheck")
     public boolean healthCheck() {
+        logger.debug("Health-check called.");
         return true;
     }
 
@@ -63,6 +66,7 @@ public class MetadataController {
     @CrossOrigin
     public ResultPage<DataResourceResult> listAvailableVersions(Pageable pageable) {
         // Ensure pageNumber and pageSize are both at least 1
+        logger.debug("Request on /datasets from page " + pageable.getPageNumber() + "and size " + pageable.getPageSize());
         return metadataService.listAvailableDataResources(max(pageable.getPageNumber(), 1), max(pageable.getPageSize(), 1));
     }
 
@@ -70,6 +74,7 @@ public class MetadataController {
     @CrossOrigin
     public LegacyResultPage<DataSet> listAvailableDataSets(Pageable pageable) {
         // Ensure pageNumber and pageSize are both at least 1
+        logger.debug("Request on /versions from page " + pageable.getPageNumber() + "and size " + pageable.getPageSize());
         return metadataService.listAvailableVersions(max(pageable.getPageNumber(), 1), max(pageable.getPageSize(), 1));
     }
 
@@ -77,6 +82,7 @@ public class MetadataController {
     @GetMapping("/versions/{dataSetId}")
     @CrossOrigin
     public DataSet findDataSetByUuid(@PathVariable String dataSetId) throws DataSetNotFoundException {
+        logger.debug("Request for a dimensional dataset with version: " + dataSetId);
         return metadataService.findDataSetByUuid(dataSetId);
     }
 
@@ -84,6 +90,7 @@ public class MetadataController {
     @GetMapping("/datasets/{dataSetId}")
     @CrossOrigin
     public DataResourceResult findDataResource(@PathVariable String dataSetId) throws DataSetNotFoundException {
+        logger.debug("Request for a data-resource with id: " + dataSetId);
         return metadataService.findDataResource(dataSetId);
     }
 
@@ -92,12 +99,15 @@ public class MetadataController {
     public DataSet findDataSetByEditionAndVersion(@PathVariable String dataSetId, @PathVariable String edition,
                                                   @PathVariable int version)
             throws DataSetNotFoundException {
+        logger.debug("Request for a dataset with the following data-resource/edition/version: " +
+                String.join("/", new String[]{dataSetId, edition, Integer.toString(version)}));
         return metadataService.findDataSetByEditionAndVersion(dataSetId, edition, version);
     }
 
     @GetMapping("/versions/{dataSetId}/dimensions")
     @CrossOrigin
     public List<DimensionMetadata> listDimensionsForDataSetUuid(@PathVariable String dataSetId) throws DataSetNotFoundException {
+        logger.debug("Request for all dimensions of dataset version: " + dataSetId);
         return metadataService.listDimensionsForDataSetUuid(dataSetId);
     }
 
@@ -106,6 +116,8 @@ public class MetadataController {
     public List<DimensionMetadata> listDimensionsforDataSetEditionVersion(@PathVariable String dataSetId, @PathVariable String edition,
                                                                           @PathVariable int version)
             throws DataSetNotFoundException {
+        logger.debug("Request for all dimensions of a dataset with the following data-resource/edition/version: " +
+                String.join("/", new String[]{dataSetId, edition, Integer.toString(version)}));
         return metadataService.listDimensionsForDataSetEditionVersion(dataSetId, edition, version);
     }
 
@@ -114,6 +126,7 @@ public class MetadataController {
     public DimensionMetadata findDimensionByIdWithDatasetUuid(@PathVariable String dataSetId, @PathVariable String dimensionId,
                                                @RequestParam(name = "view", defaultValue = "list") String view)
             throws DataSetNotFoundException, DimensionNotFoundException {
+        logger.debug("Request for a dimension for dataset version " + dataSetId + " and dimensionId " + dimensionId);
         final DimensionViewType viewType = DimensionViewType.valueOf(view.toUpperCase());
         return metadataService.findDimensionByIdWithDatasetUuid(dataSetId, dimensionId, viewType);
     }
@@ -124,6 +137,8 @@ public class MetadataController {
                                                                  @PathVariable int version, @PathVariable String dimensionId,
                                                @RequestParam(name = "view", defaultValue = "list") String view)
             throws DataSetNotFoundException, DimensionNotFoundException {
+        logger.debug("Request for a dataset with the following data-resource/edition/version: " +
+                String.join("/", new String[]{dataSetId, edition, Integer.toString(version)}));
         final DimensionViewType viewType = DimensionViewType.valueOf(view.toUpperCase());
         return metadataService.findDimensionByIdWithEditionVersion(dataSetId, edition, version, dimensionId, viewType);
     }
@@ -131,12 +146,14 @@ public class MetadataController {
     @GetMapping("/hierarchies")
     @CrossOrigin
     public List<DimensionMetadata> listHierarchies() {
+        logger.debug("Request on /hierarchies, listing all hierarchies");
         return metadataService.listHierarchies();
     }
 
     @GetMapping("/hierarchies/{hierarchyId}")
     @CrossOrigin
     public DimensionMetadata getHierarchy(@PathVariable String hierarchyId) throws DimensionNotFoundException {
+        logger.debug("Request for hierarchy " + hierarchyId);
         return metadataService.getHierarchy(hierarchyId);
     }
 
@@ -180,6 +197,12 @@ public class MetadataController {
     @Bean
     public PlatformTransactionManager getTransactionManager(final EntityManagerFactory emf) {
         return new JpaTransactionManager(emf);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    void handleRuntimeException(RuntimeException e, HttpServletResponse response) throws IOException {
+        logger.error("Unexpected RuntimeException!", e);
+        response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
 
     /**

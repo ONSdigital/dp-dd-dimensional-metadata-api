@@ -1,8 +1,11 @@
 package uk.co.onsdigital.discovery.metadata.api.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriTemplate;
+
 
 import static java.util.Objects.requireNonNull;
 
@@ -12,6 +15,8 @@ import static java.util.Objects.requireNonNull;
 @Service
 public class UrlBuilder {
     static final int MAX_PAGE_SIZE = 1000;
+
+    private static final Logger logger = LoggerFactory.getLogger(UrlBuilder.class);
 
     private final String baseUrl;
 
@@ -41,7 +46,9 @@ public class UrlBuilder {
      */
     public PageUrlTemplate datasetsPage(int pageSize) {
         if (pageSize < 1) {
-            throw new IllegalArgumentException("pageSize should be >= 1");
+            String errorMessage = "No such dataset with uuid: " + dataSetId;
+            logger.error(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
         }
         if (pageSize > MAX_PAGE_SIZE) {
             throw new IllegalArgumentException("pageSize must be <= 1000");

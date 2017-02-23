@@ -1,8 +1,11 @@
 package uk.co.onsdigital.discovery.metadata.api.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriTemplate;
+import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDaoImpl;
 
 import static java.util.Objects.requireNonNull;
 
@@ -12,6 +15,8 @@ import static java.util.Objects.requireNonNull;
 @Service
 public class LegacyUrlBuilder {
     static final int MAX_PAGE_SIZE = 1000;
+
+    private static final Logger logger = LoggerFactory.getLogger(MetadataDaoImpl.class);
 
     private final String baseUrl;
 
@@ -39,10 +44,14 @@ public class LegacyUrlBuilder {
      */
     public PageUrlTemplate datasetsPage(int pageSize) {
         if (pageSize < 1) {
-            throw new IllegalArgumentException("pageSize should be >= 1");
+            String errorMsg = "pageSize should be >= 1";
+            logger.error(errorMsg);
+            throw new IllegalArgumentException(errorMsg);
         }
         if (pageSize > MAX_PAGE_SIZE) {
-            throw new IllegalArgumentException("pageSize must be <= 1000");
+            String errorMsg = "pageSize must be <= 1000";
+            logger.error(errorMsg);
+            throw new IllegalArgumentException(errorMsg);
         }
         return pageNumber -> pageTemplate.expand(pageNumber, pageSize).toString();
     }
