@@ -49,7 +49,7 @@ public class LegacyUrlBuilder {
             throw new IllegalArgumentException(errorMsg);
         }
         if (pageSize > MAX_PAGE_SIZE) {
-            String errorMsg = "pageSize must be <= 1000";
+            String errorMsg = "pageSize must be <= " + MAX_PAGE_SIZE;
             logger.error(errorMsg);
             throw new IllegalArgumentException(errorMsg);
         }

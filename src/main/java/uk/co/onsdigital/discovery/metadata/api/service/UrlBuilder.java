@@ -46,12 +46,12 @@ public class UrlBuilder {
      */
     public PageUrlTemplate datasetsPage(int pageSize) {
         if (pageSize < 1) {
-            String errorMessage = "No such dataset with uuid: " + dataSetId;
+            String errorMessage = "pageSize must be at least 1";
             logger.error(errorMessage);
             throw new IllegalArgumentException(errorMessage);
         }
         if (pageSize > MAX_PAGE_SIZE) {
-            throw new IllegalArgumentException("pageSize must be <= 1000");
+            throw new IllegalArgumentException("pageSize must be <= " + MAX_PAGE_SIZE);
         }
         return pageNumber -> pageTemplate.expand(pageNumber, pageSize).toString();
     }
