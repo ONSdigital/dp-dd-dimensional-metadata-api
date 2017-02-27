@@ -1,6 +1,9 @@
 package uk.co.onsdigital.discovery.metadata.api.dao;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
+import uk.co.onsdigital.discovery.metadata.api.controller.MetadataController;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataResourceNotFoundExcecption;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.model.*;
@@ -15,6 +18,8 @@ import java.util.UUID;
 @Repository
 public class MetadataDaoImpl implements MetadataDao {
     private final EntityManager entityManager;
+    private static final Logger logger = LoggerFactory.getLogger(MetadataDaoImpl.class);
+
 
     public MetadataDaoImpl(EntityManager entityManager) {
         this.entityManager = entityManager;
@@ -48,7 +53,9 @@ public class MetadataDaoImpl implements MetadataDao {
     public DataResource findDataResource(String dataResourceId) throws DataResourceNotFoundExcecption {
         final DataResource dataResource = entityManager.find(DataResource.class, dataResourceId);
         if (dataResource == null) {
-            throw new DataResourceNotFoundExcecption("No such dataResource: " + dataResourceId);
+            String errorMessage = "No such dataResource: " + dataResourceId;
+            logger.error(errorMessage);
+            throw new DataResourceNotFoundExcecption(errorMessage);
         }
         return dataResource;
     }
@@ -57,7 +64,9 @@ public class MetadataDaoImpl implements MetadataDao {
     public DimensionalDataSet findDataSetByUuid(String dataSetId) throws DataSetNotFoundException {
         final DimensionalDataSet dataSet = entityManager.find(DimensionalDataSet.class, UUID.fromString(dataSetId));
         if (dataSet == null) {
-            throw new DataSetNotFoundException("No such dataset: " + dataSetId);
+            String errorMessage = "No such dataset with uuid: " + dataSetId;
+            logger.error(errorMessage);
+            throw new DataSetNotFoundException(errorMessage);
         }
         return dataSet;
     }
@@ -73,8 +82,9 @@ public class MetadataDaoImpl implements MetadataDao {
                             .getSingleResult();
             return dataSet;
         } catch (NoResultException e) {
-            throw new DataSetNotFoundException("No such dataset: " + edition);
-        }
+            String errorMessage = "No such dataset with dataResourceId/edition/version: " + String.join("/", new String[]{dataResourceId, edition, Integer.toString(version)});
+            logger.error(errorMessage);
+            throw new DataSetNotFoundException(errorMessage);        }
     }
 
     @Override
