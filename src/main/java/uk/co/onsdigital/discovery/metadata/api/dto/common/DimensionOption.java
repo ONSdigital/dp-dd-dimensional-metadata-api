@@ -86,8 +86,8 @@ public class DimensionOption implements Comparable<DimensionOption> {
     public int compareTo(final DimensionOption that) {
         return ComparisonChain.start()
                 .compare(this.levelType, that.levelType, LevelTypeComparator.INSTANCE)
+                .compare(this.code, that.code, Ordering.from(String.CASE_INSENSITIVE_ORDER).nullsLast())
                 .compare(this.name, that.name, Ordering.from(String.CASE_INSENSITIVE_ORDER).nullsLast())
-                .compare(this.code, that.code, Ordering.natural().nullsLast())
                 .result();
     }
 
