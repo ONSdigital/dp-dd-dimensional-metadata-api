@@ -2,9 +2,10 @@ package uk.co.onsdigital.discovery.metadata.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonRawValue;
+import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyDataSet;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class DimensionalDataSetResult extends uk.co.onsdigital.discovery.metadata.api.dto.legacy.DataSet {
+public class DimensionalDataSetResult extends LegacyDataSet {
     private String edition;
     private String version;
     private String datasetId;

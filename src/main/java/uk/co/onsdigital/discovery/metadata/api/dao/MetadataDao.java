@@ -27,7 +27,7 @@ public interface MetadataDao {
      * @param pageSize the number of results to include in a page.
      * @return a list of available datasets for the given pageNumber and pageSize.
      */
-    List<DimensionalDataSet> findLegacyDataSetsPage(int pageNumber, int pageSize);
+    List<DataSet> findLegacyDataSetsPage(int pageNumber, int pageSize);
 
     /**
      * Find a page of available dataresources (datasets on the front-end) present in the database.
@@ -39,7 +39,7 @@ public interface MetadataDao {
     List<DataResource> findDataResourcesPage(int pageNumber, int pageSize);
 
     /**
-     * Find a particular dataresource by its id and list all the dimensional data set editions and versions it has.
+     * Find a particular dataresource by its id and list all the data set editions and versions it has.
      * @param dataResourceId the dataresource id.
      * @return the matching dataset if found.
      * @throws DataResourceNotFoundExcecption if the dataset does not exist.
@@ -52,16 +52,16 @@ public interface MetadataDao {
      * @return the matching dataset if found.
      * @throws DataSetNotFoundException if the dataset does not exist.
      */
-    DimensionalDataSet findDataSetByUuid(String dataSetId) throws DataSetNotFoundException;
+    DataSet findDataSetByUuid(String dataSetId) throws DataSetNotFoundException;
 
     /**
      * Find a particular dataset by edition and version.
-     * @param edition the edition of the dimensional dataset.
-     * @param version the version of the dimensional dataset.
+     * @param edition the edition of the dataset.
+     * @param version the version of the dataset.
      * @return the matching dataset if found.
      * @throws DataSetNotFoundException if the dataset does not exist.
      */
-    DimensionalDataSet findDataSetByEditionAndVersion(String dataResourceId, String edition, int version) throws DataSetNotFoundException;
+    DataSet findDataSetByEditionAndVersion(String dataResourceId, String edition, int version) throws DataSetNotFoundException;
 
     /**
      * Load the dimensions for a given dataset based on UUID.
@@ -75,8 +75,8 @@ public interface MetadataDao {
     /**
      * Load the dimensions for a given dataset based on edition and version.
      *
-     * @param edition the edition of the dimensional dataset.
-     * @param version the version of the dimensional dataset.
+     * @param edition the edition of the dataset.
+     * @param version the version of the dataset.
      * @return the dimensions defined in the given dataset.
      * @throws DataSetNotFoundException if the dataset does not exist.
      */

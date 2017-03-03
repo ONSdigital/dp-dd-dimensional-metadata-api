@@ -11,7 +11,7 @@ import java.util.List;
  * Represents metadata about a particular dataset.
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class DataSet {
+public class LegacyDataSet {
 
     protected String id;
     protected String s3URL;
