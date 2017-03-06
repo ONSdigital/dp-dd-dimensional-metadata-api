@@ -27,18 +27,18 @@ public class MetadataDaoImpl implements MetadataDao {
 
     @Override
     public long countDataSets() {
-        return entityManager.createNamedQuery("DimensionalDataSet.count", Long.class).getSingleResult();
+        return entityManager.createNamedQuery(DataSet.COUNT_ACTIVE_QUERY, Long.class).getSingleResult();
     }
 
     @Override
     public long countDataResources() {
-        return entityManager.createNamedQuery("DataResource.count", Long.class).getSingleResult();
+        return entityManager.createNamedQuery(DataResource.COUNT_ACTIVE, Long.class).getSingleResult();
     }
 
     @Override
     public List<DataSet> findLegacyDataSetsPage(int pageNumber, int pageSize) {
         final int firstPageOffset = (pageNumber - 1) * pageSize;
-        return entityManager.createNamedQuery("DataSet.findAll", DataSet.class)
+        return entityManager.createNamedQuery(DataSet.FIND_ACTIVE_QUERY, DataSet.class)
                 .setFirstResult(firstPageOffset).setMaxResults(pageSize).getResultList();
     }
 
@@ -46,7 +46,7 @@ public class MetadataDaoImpl implements MetadataDao {
     @Override
     public List<DataResource> findDataResourcesPage(int pageNumber, int pageSize) {
         final int firstPageOffset = (pageNumber - 1) * pageSize;
-        return entityManager.createNamedQuery("DataResource.findAll", DataResource.class)
+        return entityManager.createNamedQuery(DataResource.FIND_ACTIVE_QUERY, DataResource.class)
                 .setFirstResult(firstPageOffset).setMaxResults(pageSize).getResultList();
     }
 
