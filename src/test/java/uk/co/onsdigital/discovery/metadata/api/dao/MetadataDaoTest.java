@@ -40,7 +40,7 @@ public class MetadataDaoTest {
     public void shouldReturnAllDataSetsFromDatabase() throws Exception {
         List<DataSet> dataSets = asList(new DataSet(), new DataSet());
 
-        when(mockEntityManager.createNamedQuery("DataSet.findAll", DataSet.class)).thenReturn(mockDimensionalDataSetQuery);
+        when(mockEntityManager.createNamedQuery(DataSet.FIND_ACTIVE_QUERY, DataSet.class)).thenReturn(mockDimensionalDataSetQuery);
         when(mockDimensionalDataSetQuery.setFirstResult(0)).thenReturn(mockDimensionalDataSetQuery);
         when(mockDimensionalDataSetQuery.setMaxResults(10)).thenReturn(mockDimensionalDataSetQuery);
         when(mockDimensionalDataSetQuery.getResultList()).thenReturn(dataSets);
@@ -53,7 +53,7 @@ public class MetadataDaoTest {
     public void shouldReturnAllDataResourcesFromDatabase() throws Exception {
         List<DataResource> dataResources = asList(new DataResource());
 
-        when(mockEntityManager.createNamedQuery("DataResource.findAll", DataResource.class)).thenReturn(mockDataResourceQuery);
+        when(mockEntityManager.createNamedQuery(DataResource.FIND_ACTIVE_QUERY, DataResource.class)).thenReturn(mockDataResourceQuery);
         when(mockDataResourceQuery.setFirstResult(0)).thenReturn(mockDataResourceQuery);
         when(mockDataResourceQuery.setMaxResults(10)).thenReturn(mockDataResourceQuery);
         when(mockDataResourceQuery.getResultList()).thenReturn(dataResources);
