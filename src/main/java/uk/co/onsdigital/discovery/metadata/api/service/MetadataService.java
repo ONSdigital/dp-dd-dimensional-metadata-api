@@ -2,7 +2,7 @@ package uk.co.onsdigital.discovery.metadata.api.service;
 
 import uk.co.onsdigital.discovery.metadata.api.dto.DataResourceResult;
 import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
-import uk.co.onsdigital.discovery.metadata.api.dto.legacy.DataSet;
+import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyDataSet;
 import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionMetadata;
 import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
@@ -31,7 +31,7 @@ public interface MetadataService {
      * @param pageSize the number of datasets to include in each page.
      * @return all available datasets.
      */
-    LegacyResultPage<DataSet> listAvailableVersions(int pageNumber, int pageSize);
+    LegacyResultPage<LegacyDataSet> listAvailableVersions(int pageNumber, int pageSize);
 
     /**
      * Find a particular dataset by UUID.
@@ -40,7 +40,7 @@ public interface MetadataService {
      * @return the matching dataset.
      * @throws DataSetNotFoundException if the dataset does not exist.
      */
-    DataSet findDataSetByUuid(String dataSetUuid) throws DataSetNotFoundException;
+    LegacyDataSet findDataSetByUuid(String dataSetUuid) throws DataSetNotFoundException;
 
     /**
      * Find a particular dataresource by its ID and display its available editions and versions.
@@ -59,7 +59,7 @@ public interface MetadataService {
      * @return the matching dataset.
      * @throws DataSetNotFoundException if the dataset does not exist.
      */
-    DataSet findDataSetByEditionAndVersion(String dataResourceId, String edition, int version) throws DataSetNotFoundException;
+    LegacyDataSet findDataSetByEditionAndVersion(String dataResourceId, String edition, int version) throws DataSetNotFoundException;
 
     /**
      * List the available dimensions for a particular dataset using its uuid.
