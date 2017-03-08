@@ -21,18 +21,20 @@ public class DimensionOption implements Comparable<DimensionOption> {
     private String code;
     private String name;
     private HierarchyLevelType levelType;
+    private String hierarcyId;
     private SortedSet<DimensionOption> children;
 
-    public DimensionOption(UUID id, String code, String name, HierarchyLevelType levelType) {
+    public DimensionOption(UUID id, String code, String name, HierarchyLevelType levelType, String hierarcyId) {
         this.id = id;
         this.code = code;
         this.name = name;
         this.levelType = levelType;
         this.children = null;
+        this.hierarcyId = hierarcyId;
     }
 
     public DimensionOption(UUID id, String code, String name) {
-        this(id, code, name, null);
+        this(id, code, name, null, null);
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -56,6 +58,12 @@ public class DimensionOption implements Comparable<DimensionOption> {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     public SortedSet<DimensionOption> getChildren() {
         return children;
+    }
+
+    @JsonProperty("hierarcy_id")
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public String getHierarcyId() {
+        return hierarcyId;
     }
 
     /**

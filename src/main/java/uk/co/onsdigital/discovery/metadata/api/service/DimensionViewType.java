@@ -116,7 +116,7 @@ public enum DimensionViewType {
     private static DimensionOption convertEntryToOption(final DimensionValue dimensionValue, final HierarchyEntry hierarchyEntry) {
         if (hierarchyEntry != null) {
             final UUID id = dimensionValue != null ? dimensionValue.getId() : null;
-            return new DimensionOption(id, hierarchyEntry.getCode(), hierarchyEntry.getName(), hierarchyEntry.getLevelType());
+            return new DimensionOption(id, hierarchyEntry.getCode(), hierarchyEntry.getName(), hierarchyEntry.getLevelType(), hierarchyEntry.getHierarchy().getId());
         } else {
             return new DimensionOption(dimensionValue.getId(), dimensionValue.getValue(), dimensionValue.getValue());
         }
