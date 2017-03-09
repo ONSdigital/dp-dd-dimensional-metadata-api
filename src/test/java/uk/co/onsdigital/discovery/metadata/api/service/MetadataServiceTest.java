@@ -5,7 +5,7 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
-import uk.co.onsdigital.discovery.metadata.api.dto.legacy.DataSet;
+import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyDataSet;
 import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionMetadata;
 import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionOption;
 import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyResultPage;
@@ -13,7 +13,7 @@ import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundExceptio
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 import uk.co.onsdigital.discovery.model.Dimension;
 import uk.co.onsdigital.discovery.model.DimensionValue;
-import uk.co.onsdigital.discovery.model.DimensionalDataSet;
+import uk.co.onsdigital.discovery.model.DataSet;
 import uk.co.onsdigital.discovery.model.Hierarchy;
 import uk.co.onsdigital.discovery.model.HierarchyEntry;
 import uk.co.onsdigital.discovery.model.HierarchyLevelType;
@@ -49,14 +49,14 @@ public class MetadataServiceTest {
     public void shouldReturnAllDataSetsDefinedInDatabase() throws Exception {
         final int pageNumber = 3;
         final int resultPerPage = 10;
-        List<DimensionalDataSet> dbDataSets = Arrays.asList(
+        List<DataSet> dbDataSets = Arrays.asList(
                 dbDataSet(UUID.randomUUID(), "test 1 title", "test 1 description"),
                 dbDataSet(UUID.randomUUID(), "test 2 title", "test 2 description"));
         long total = 342L;
         when(mockDao.findLegacyDataSetsPage(pageNumber, resultPerPage)).thenReturn(dbDataSets);
         when(mockDao.countDataSets()).thenReturn(total);
 
-        LegacyResultPage<DataSet> result = metadataService.listAvailableVersions(pageNumber, resultPerPage);
+        LegacyResultPage<LegacyDataSet> result = metadataService.listAvailableVersions(pageNumber, resultPerPage);
 
         assertThat(result).isNotNull()
                 .hasFieldOrPropertyWithValue("total", total)
@@ -71,7 +71,7 @@ public class MetadataServiceTest {
     public void shouldConstructCorrectURLs() throws Exception {
         when(mockDao.findLegacyDataSetsPage(1, 5)).thenReturn(singletonList(dbDataSet(UUID.fromString(DATASET_ID), "", "")));
 
-        List<DataSet> result = metadataService.listAvailableVersions(1, 5).getItems();
+        List<LegacyDataSet> result = metadataService.listAvailableVersions(1, 5).getItems();
 
         assertThat(result).hasSize(1);
         assertThat(result.iterator().next().getUrl()).isEqualTo(BASE_URL + "/versions/" + DATASET_ID);
@@ -82,13 +82,13 @@ public class MetadataServiceTest {
         UUID dataSetId = UUID.randomUUID();
         String title = "test title";
         String description = "test description";
-        DimensionalDataSet dbDataSet = dbDataSet(dataSetId, title, description);
+        DataSet dbDataSet = dbDataSet(dataSetId, title, description);
         when(mockDao.findLegacyDataSetsPage(1, 10)).thenReturn(singletonList(dbDataSet));
 
-        List<DataSet> result = metadataService.listAvailableVersions(1, 10).getItems();
+        List<LegacyDataSet> result = metadataService.listAvailableVersions(1, 10).getItems();
 
         assertThat(result).hasSize(1);
-        DataSet dataSet = result.iterator().next();
+        LegacyDataSet dataSet = result.iterator().next();
         assertDataSetEqualsDbModel(dataSet, dbDataSet);
     }
 
@@ -97,10 +97,10 @@ public class MetadataServiceTest {
         UUID dataSetId = UUID.randomUUID();
         String title = "test title";
         String description = "test description";
-        DimensionalDataSet dbDataSet = dbDataSet(dataSetId, title, description);
+        DataSet dbDataSet = dbDataSet(dataSetId, title, description);
         when(mockDao.findDataSetByUuid(dataSetId.toString())).thenReturn(dbDataSet);
 
-        DataSet result = metadataService.findDataSetByUuid(dataSetId.toString());
+        LegacyDataSet result = metadataService.findDataSetByUuid(dataSetId.toString());
 
         assertDataSetEqualsDbModel(result, dbDataSet);
     }
@@ -129,7 +129,7 @@ public class MetadataServiceTest {
 
     @Test
     public void shouldMapDimensionsCorrectly() throws Exception {
-        DimensionalDataSet dataSet = new DimensionalDataSet();
+        DataSet dataSet = new DataSet();
         dataSet.setId(UUID.randomUUID());
         Dimension dim1 = new Dimension(dataSet, "dim1", new DimensionValue("val1"),
                                                         new DimensionValue("val2"));
@@ -238,13 +238,13 @@ public class MetadataServiceTest {
         assertThat(secondChild.getChildren()).isNullOrEmpty();
     }
 
-    private static void assertDataSetEqualsDbModel(final DataSet actual, final DimensionalDataSet expected) {
+    private static void assertDataSetEqualsDbModel(final LegacyDataSet actual, final DataSet expected) {
         assertThat(actual.getId()).isEqualTo(expected.getId().toString());
         assertThat(actual.getS3URL()).isEqualTo(expected.getS3URL());
     }
 
-    private DimensionalDataSet dbDataSet(UUID dataSetId, String s3URL, String description) {
-        DimensionalDataSet dataSet = new DimensionalDataSet();
+    private DataSet dbDataSet(UUID dataSetId, String s3URL, String description) {
+        DataSet dataSet = new DataSet();
         dataSet.setId(dataSetId);
         dataSet.setS3URL(s3URL);
         return dataSet;
