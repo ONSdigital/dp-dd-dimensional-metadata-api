@@ -27,18 +27,18 @@ public class MetadataDaoImpl implements MetadataDao {
 
     @Override
     public long countDataSets() {
-        return entityManager.createNamedQuery("DimensionalDataSet.count", Long.class).getSingleResult();
+        return entityManager.createNamedQuery(DataSet.COUNT_ACTIVE_QUERY, Long.class).getSingleResult();
     }
 
     @Override
     public long countDataResources() {
-        return entityManager.createNamedQuery("DataResource.count", Long.class).getSingleResult();
+        return entityManager.createNamedQuery(DataResource.COUNT_ACTIVE, Long.class).getSingleResult();
     }
 
     @Override
-    public List<DimensionalDataSet> findLegacyDataSetsPage(int pageNumber, int pageSize) {
+    public List<DataSet> findLegacyDataSetsPage(int pageNumber, int pageSize) {
         final int firstPageOffset = (pageNumber - 1) * pageSize;
-        return entityManager.createNamedQuery("DimensionalDataSet.findAll", DimensionalDataSet.class)
+        return entityManager.createNamedQuery(DataSet.FIND_ACTIVE_QUERY, DataSet.class)
                 .setFirstResult(firstPageOffset).setMaxResults(pageSize).getResultList();
     }
 
@@ -46,7 +46,7 @@ public class MetadataDaoImpl implements MetadataDao {
     @Override
     public List<DataResource> findDataResourcesPage(int pageNumber, int pageSize) {
         final int firstPageOffset = (pageNumber - 1) * pageSize;
-        return entityManager.createNamedQuery("DataResource.findAll", DataResource.class)
+        return entityManager.createNamedQuery(DataResource.FIND_ACTIVE_QUERY, DataResource.class)
                 .setFirstResult(firstPageOffset).setMaxResults(pageSize).getResultList();
     }
 
@@ -61,8 +61,8 @@ public class MetadataDaoImpl implements MetadataDao {
     }
 
     @Override
-    public DimensionalDataSet findDataSetByUuid(String dataSetId) throws DataSetNotFoundException {
-        final DimensionalDataSet dataSet = entityManager.find(DimensionalDataSet.class, UUID.fromString(dataSetId));
+    public DataSet findDataSetByUuid(String dataSetId) throws DataSetNotFoundException {
+        final DataSet dataSet = entityManager.find(DataSet.class, UUID.fromString(dataSetId));
         if (dataSet == null) {
             String errorMessage = "No such dataset with uuid: " + dataSetId;
             logger.error(errorMessage);
@@ -72,13 +72,13 @@ public class MetadataDaoImpl implements MetadataDao {
     }
 
     @Override
-    public DimensionalDataSet findDataSetByEditionAndVersion(String dataResourceId, String edition, int version) throws DataSetNotFoundException {
+    public DataSet findDataSetByEditionAndVersion(String dataResourceId, String edition, int version) throws DataSetNotFoundException {
         try {
-            final DimensionalDataSet dataSet =
-                    entityManager.createNamedQuery(DimensionalDataSet.FIND_BY_EDITION_VERSION, DimensionalDataSet.class)
-                            .setParameter(DimensionalDataSet.DATA_RESOURCE_PARAM, dataResourceId)
-                            .setParameter(DimensionalDataSet.EDITION_PARAM, edition)
-                            .setParameter(DimensionalDataSet.VERSION_PARAM, version)
+            final DataSet dataSet =
+                    entityManager.createNamedQuery(DataSet.FIND_BY_EDITION_VERSION, DataSet.class)
+                            .setParameter(DataSet.DATA_RESOURCE_PARAM, dataResourceId)
+                            .setParameter(DataSet.EDITION_PARAM, edition)
+                            .setParameter(DataSet.VERSION_PARAM, version)
                             .getSingleResult();
             return dataSet;
         } catch (NoResultException e) {

@@ -6,7 +6,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.model.DataResource;
-import uk.co.onsdigital.discovery.model.DimensionalDataSet;
+import uk.co.onsdigital.discovery.model.DataSet;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -23,7 +23,7 @@ public class MetadataDaoTest {
     private EntityManager mockEntityManager;
 
     @Mock
-    private TypedQuery<DimensionalDataSet> mockDimensionalDataSetQuery;
+    private TypedQuery<DataSet> mockDimensionalDataSetQuery;
 
     @Mock
     private TypedQuery<DataResource> mockDataResourceQuery;
@@ -38,14 +38,14 @@ public class MetadataDaoTest {
 
     @Test
     public void shouldReturnAllDataSetsFromDatabase() throws Exception {
-        List<DimensionalDataSet> dataSets = asList(new DimensionalDataSet(), new DimensionalDataSet());
+        List<DataSet> dataSets = asList(new DataSet(), new DataSet());
 
-        when(mockEntityManager.createNamedQuery("DimensionalDataSet.findAll", DimensionalDataSet.class)).thenReturn(mockDimensionalDataSetQuery);
+        when(mockEntityManager.createNamedQuery(DataSet.FIND_ACTIVE_QUERY, DataSet.class)).thenReturn(mockDimensionalDataSetQuery);
         when(mockDimensionalDataSetQuery.setFirstResult(0)).thenReturn(mockDimensionalDataSetQuery);
         when(mockDimensionalDataSetQuery.setMaxResults(10)).thenReturn(mockDimensionalDataSetQuery);
         when(mockDimensionalDataSetQuery.getResultList()).thenReturn(dataSets);
 
-        List<DimensionalDataSet> result = metadataDao.findLegacyDataSetsPage(1, 10);
+        List<DataSet> result = metadataDao.findLegacyDataSetsPage(1, 10);
         assertThat(result).isEqualTo(dataSets);
     }
 
@@ -53,7 +53,7 @@ public class MetadataDaoTest {
     public void shouldReturnAllDataResourcesFromDatabase() throws Exception {
         List<DataResource> dataResources = asList(new DataResource());
 
-        when(mockEntityManager.createNamedQuery("DataResource.findAll", DataResource.class)).thenReturn(mockDataResourceQuery);
+        when(mockEntityManager.createNamedQuery(DataResource.FIND_ACTIVE_QUERY, DataResource.class)).thenReturn(mockDataResourceQuery);
         when(mockDataResourceQuery.setFirstResult(0)).thenReturn(mockDataResourceQuery);
         when(mockDataResourceQuery.setMaxResults(10)).thenReturn(mockDataResourceQuery);
         when(mockDataResourceQuery.getResultList()).thenReturn(dataResources);
@@ -70,12 +70,12 @@ public class MetadataDaoTest {
 
     @Test
     public void shouldReturnMatchingDataSet() throws Exception {
-        final DimensionalDataSet dataSet = new DimensionalDataSet();
+        final DataSet dataSet = new DataSet();
         final UUID dataSetId = UUID.randomUUID();
 
-        when(mockEntityManager.find(DimensionalDataSet.class, dataSetId)).thenReturn(dataSet);
+        when(mockEntityManager.find(DataSet.class, dataSetId)).thenReturn(dataSet);
 
-        final DimensionalDataSet result = metadataDao.findDataSetByUuid(dataSetId.toString());
+        final DataSet result = metadataDao.findDataSetByUuid(dataSetId.toString());
         assertThat(result).isEqualTo(dataSet);
     }
 

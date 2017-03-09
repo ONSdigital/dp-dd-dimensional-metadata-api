@@ -4,7 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.annotation.RequestScope;
 import uk.co.onsdigital.discovery.metadata.api.dto.DataResourceResult;
 import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
-import uk.co.onsdigital.discovery.metadata.api.dto.legacy.DataSet;
+import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyDataSet;
 import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionMetadata;
 import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
@@ -46,6 +48,7 @@ import static java.util.Arrays.asList;
 @RestController
 @SpringBootApplication
 @ComponentScan(basePackages = "uk.co.onsdigital")
+@EnableAutoConfiguration(exclude = {HibernateJpaAutoConfiguration.class})
 public class MetadataController {
     private static final Logger logger = LoggerFactory.getLogger(MetadataController.class);
 
@@ -72,7 +75,7 @@ public class MetadataController {
 
     @GetMapping("/versions")
     @CrossOrigin
-    public LegacyResultPage<DataSet> listAvailableDataSets(Pageable pageable) {
+    public LegacyResultPage<LegacyDataSet> listAvailableDataSets(Pageable pageable) {
         // Ensure pageNumber and pageSize are both at least 1
         logger.debug("Request on /versions from page " + pageable.getPageNumber() + "and size " + pageable.getPageSize());
         return metadataService.listAvailableVersions(max(pageable.getPageNumber(), 1), max(pageable.getPageSize(), 1));
@@ -81,8 +84,8 @@ public class MetadataController {
 
     @GetMapping("/versions/{dataSetId}")
     @CrossOrigin
-    public DataSet findDataSetByUuid(@PathVariable String dataSetId) throws DataSetNotFoundException {
-        logger.debug("Request for a dimensional dataset with version: " + dataSetId);
+    public LegacyDataSet findDataSetByUuid(@PathVariable String dataSetId) throws DataSetNotFoundException {
+        logger.debug("Request for a dataset with version: " + dataSetId);
         return metadataService.findDataSetByUuid(dataSetId);
     }
 
@@ -96,8 +99,8 @@ public class MetadataController {
 
     @GetMapping("/datasets/{dataSetId}/editions/{edition}/versions/{version}")
     @CrossOrigin
-    public DataSet findDataSetByEditionAndVersion(@PathVariable String dataSetId, @PathVariable String edition,
-                                                  @PathVariable int version)
+    public LegacyDataSet findDataSetByEditionAndVersion(@PathVariable String dataSetId, @PathVariable String edition,
+                                                        @PathVariable int version)
             throws DataSetNotFoundException {
         logger.debug("Request for a dataset with the following data-resource/edition/version: " +
                 String.join("/", new String[]{dataSetId, edition, Integer.toString(version)}));

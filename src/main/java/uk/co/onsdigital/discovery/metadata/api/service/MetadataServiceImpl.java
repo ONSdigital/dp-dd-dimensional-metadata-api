@@ -11,7 +11,7 @@ import uk.co.onsdigital.discovery.metadata.api.dao.MetadataDao;
 import uk.co.onsdigital.discovery.metadata.api.dto.*;
 import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionMetadata;
 import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionOption;
-import uk.co.onsdigital.discovery.metadata.api.dto.legacy.DataSet;
+import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyDataSet;
 import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
@@ -55,12 +55,12 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     @Transactional(readOnly = true)
-    public LegacyResultPage<DataSet> listAvailableVersions(int pageNumber, int pageSize) {
+    public LegacyResultPage<LegacyDataSet> listAvailableVersions(int pageNumber, int pageSize) {
         final long totalDataSets = metadataDao.countDataSets();
-        final List<DimensionalDataSet> dbDataSets = metadataDao.findLegacyDataSetsPage(pageNumber, pageSize);
-        final List<DataSet> resultDataSets = new ArrayList<>(dbDataSets.size());
+        final List<DataSet> dbDataSets = metadataDao.findLegacyDataSetsPage(pageNumber, pageSize);
+        final List<LegacyDataSet> resultDataSets = new ArrayList<>(dbDataSets.size());
 
-        for (DimensionalDataSet dbDataSet : dbDataSets) {
+        for (DataSet dbDataSet : dbDataSets) {
             resultDataSets.add(legacyConvertDataSet(dbDataSet, false));
         }
 
@@ -68,7 +68,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     @Transactional(readOnly = true)
-    public DataSet findDataSetByUuid(String dataSetUuid) throws DataSetNotFoundException {
+    public LegacyDataSet findDataSetByUuid(String dataSetUuid) throws DataSetNotFoundException {
         return legacyConvertDataSet(metadataDao.findDataSetByUuid(dataSetUuid), true);
     }
 
@@ -78,7 +78,7 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Override
     @Transactional(readOnly = true)
-    public DataSet findDataSetByEditionAndVersion(String dataResourceId, String edition, int version) throws DataSetNotFoundException {
+    public LegacyDataSet findDataSetByEditionAndVersion(String dataResourceId, String edition, int version) throws DataSetNotFoundException {
         return convertDataSet(metadataDao.findDataSetByEditionAndVersion(dataResourceId, edition, version), true);
     }
 
@@ -127,14 +127,14 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     /**
-     * Converts a dataset from the database into an API {@link DataSet} object. This is the legacy display.
+     * Converts a dataset from the database into an API {@link LegacyDataSet} object. This is the legacy display.
      *
      * @param dbDataSet the dataset loaded from the database.
      * @param includeDimensions whether to include the dimensions in the output.
-     * @return the {@link DataSet} model populated with the metadata about the dataset.
+     * @return the {@link LegacyDataSet} model populated with the metadata about the dataset.
      */
-    private DataSet legacyConvertDataSet(final DimensionalDataSet dbDataSet, final boolean includeDimensions) {
-        final DataSet dataSet = new DataSet();
+    private LegacyDataSet legacyConvertDataSet(final DataSet dbDataSet, final boolean includeDimensions) {
+        final LegacyDataSet dataSet = new LegacyDataSet();
         dataSet.setId(dbDataSet.getId().toString());
         dataSet.setTitle(dbDataSet.getTitle());
         dataSet.setS3URL(dbDataSet.getS3URL());
@@ -160,7 +160,7 @@ public class MetadataServiceImpl implements MetadataService {
      * @param includeDimensions whether to include the dimensions in the output.
      * @return the {@link DimensionalDataSetResult} model populated with the metadata about the dataset.
      */
-    private DimensionalDataSetResult convertDataSet(final DimensionalDataSet dbDataSet, final boolean includeDimensions) {
+    private DimensionalDataSetResult convertDataSet(final DataSet dbDataSet, final boolean includeDimensions) {
         final DimensionalDataSetResult ddSet = new DimensionalDataSetResult();
         ddSet.setId(dbDataSet.getId().toString());
         ddSet.setDatasetId(dbDataSet.getDataResource().getId());
@@ -195,12 +195,12 @@ public class MetadataServiceImpl implements MetadataService {
         drResult.setMetadata(defaultIfEmpty(dataResource.getMetadata(), "{}"));
         drResult.setTitle(dataResource.getTitle());
         final Latest latest = new Latest();
-        final List<DimensionalDataSet> dds = dataResource.getDimensionalDataSets();
+        final List<DataSet> dds = dataResource.getDataSets();
         if (dds.size() == 0) {
             drResult.setLatest(null);
             drResult.setEditions(null);
         } else {
-            final DimensionalDataSet latestDds = dds.get(0); // this will always be the latest as we order by major and minor in the model
+            final DataSet latestDds = dds.get(0); // this will always be the latest as we order by major and minor in the model
             latest.setMetadata(StringUtils.defaultIfEmpty(latestDds.getMetadata(), "{}"));
             latest.setEdition(latestDds.getMajorLabel());
             latest.setVersion(Integer.toString(latestDds.getMinorVersion()));
@@ -216,9 +216,9 @@ public class MetadataServiceImpl implements MetadataService {
     // TODO: Once the metadata-editor decides to edit dataresources, it will change the schema and from there we can change
     // this to reflect on new tables. As of now, the edition label is based on the major_label of the latest dataset that
     // has a common major_version between them.
-    private List<Edition> extractEditionAndValuesFromDimensionalDataSets(List<DimensionalDataSet> dimensionalDataSets) {
+    private List<Edition> extractEditionAndValuesFromDimensionalDataSets(List<DataSet> dimensionalDataSets) {
         HashMap<Integer, Edition> editionMap = new LinkedHashMap<>();
-        for(DimensionalDataSet dds: dimensionalDataSets) {
+        for(DataSet dds: dimensionalDataSets) {
           Edition edition = editionMap.get(dds.getMajorVersion());
           if (edition == null) {
               edition = new Edition();
