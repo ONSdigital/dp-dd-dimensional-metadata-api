@@ -65,6 +65,7 @@ public class DimensionViewTypeTest {
             assertThat(option.getName()).isEqualTo(value.getHierarchyEntry().getName());
             assertThat(option.getCode()).isEqualTo(value.getHierarchyEntry().getCode());
             assertThat(option.getLevelType()).isEqualTo(value.getHierarchyEntry().getLevelType());
+            assertThat(option.getHierarchyId()).isEqualTo(value.getHierarchyEntry().getHierarchy().getId());
         }
     }
 
