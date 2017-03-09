@@ -30,6 +30,7 @@ import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyResultPage;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataResourceNotFoundExcecption;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
+import uk.co.onsdigital.discovery.metadata.api.exception.NotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.service.DimensionViewType;
 import uk.co.onsdigital.discovery.metadata.api.service.MetadataService;
 
@@ -203,14 +204,8 @@ public class MetadataController {
         return new JpaTransactionManager(emf);
     }
 
-    @ExceptionHandler(DataSetNotFoundException.class)
-    void handleDataSetNotFoundException(DataSetNotFoundException e, HttpServletResponse response) throws IOException {
-        logger.error(e.getMessage(), e);
-        response.sendError(HttpStatus.NOT_FOUND.value(), e.getMessage());
-    }
-
-    @ExceptionHandler(DataResourceNotFoundExcecption.class)
-    void handleDataResourceNotFoundException(DataResourceNotFoundExcecption e, HttpServletResponse response) throws IOException {
+    @ExceptionHandler(NotFoundException.class)
+    void handleNotFoundException(NotFoundException e, HttpServletResponse response) throws IOException {
         logger.error(e.getMessage(), e);
         response.sendError(HttpStatus.NOT_FOUND.value(), e.getMessage());
     }
