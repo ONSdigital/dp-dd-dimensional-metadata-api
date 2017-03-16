@@ -21,6 +21,7 @@ import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
+import static uk.co.onsdigital.discovery.model.DataSet.STATUS_COMPLETE;
 
 /**
  * Implementation of the {@link MetadataService}.
@@ -195,7 +196,7 @@ public class MetadataServiceImpl implements MetadataService {
         drResult.setMetadata(defaultIfEmpty(dataResource.getMetadata(), "{}"));
         drResult.setTitle(dataResource.getTitle());
         final Latest latest = new Latest();
-        final List<DataSet> dds = dataResource.getDataSets();
+        final List<DataSet> dds = getCompleteDatasets(dataResource);
         if (dds.size() == 0) {
             drResult.setLatest(null);
             drResult.setEditions(null);
@@ -210,6 +211,10 @@ public class MetadataServiceImpl implements MetadataService {
             drResult.setEditions(extractEditionAndValuesFromDimensionalDataSets(dds));
         }
         return drResult;
+    }
+
+    private List<DataSet> getCompleteDatasets(DataResource dataResource) {
+        return dataResource.getDataSets().stream().filter(set -> STATUS_COMPLETE.equals(set.getStatus())).collect(toList());
     }
 
     // This is a terrible hack to list all the editions and dimensions.

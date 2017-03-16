@@ -2,6 +2,7 @@ package uk.co.onsdigital.discovery.metadata.api.service;
 
 import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionOption;
 import uk.co.onsdigital.discovery.model.DimensionValue;
+import uk.co.onsdigital.discovery.model.Hierarchy;
 import uk.co.onsdigital.discovery.model.HierarchyEntry;
 
 import java.util.ArrayList;
@@ -116,7 +117,9 @@ public enum DimensionViewType {
     private static DimensionOption convertEntryToOption(final DimensionValue dimensionValue, final HierarchyEntry hierarchyEntry) {
         if (hierarchyEntry != null) {
             final UUID id = dimensionValue != null ? dimensionValue.getId() : null;
-            return new DimensionOption(id, hierarchyEntry.getCode(), hierarchyEntry.getName(), hierarchyEntry.getLevelType());
+            final Hierarchy hierarchy = hierarchyEntry.getHierarchy();
+            final String hierarchyId = hierarchy != null ? hierarchy.getId() : null;
+            return new DimensionOption(id, hierarchyEntry.getCode(), hierarchyEntry.getName(), hierarchyEntry.getLevelType(), hierarchyId);
         } else {
             return new DimensionOption(dimensionValue.getId(), dimensionValue.getValue(), dimensionValue.getValue());
         }
