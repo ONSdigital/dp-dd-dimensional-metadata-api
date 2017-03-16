@@ -27,8 +27,10 @@ import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
 import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyDataSet;
 import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionMetadata;
 import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyResultPage;
+import uk.co.onsdigital.discovery.metadata.api.exception.DataResourceNotFoundExcecption;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
+import uk.co.onsdigital.discovery.metadata.api.exception.NotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.service.DimensionViewType;
 import uk.co.onsdigital.discovery.metadata.api.service.MetadataService;
 
@@ -202,11 +204,20 @@ public class MetadataController {
         return new JpaTransactionManager(emf);
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    void handleNotFoundException(NotFoundException e, HttpServletResponse response) throws IOException {
+        logger.error(e.getMessage(), e);
+        response.sendError(HttpStatus.NOT_FOUND.value(), e.getMessage());
+    }
+
     @ExceptionHandler(RuntimeException.class)
     void handleRuntimeException(RuntimeException e, HttpServletResponse response) throws IOException {
         logger.error("Unexpected RuntimeException!", e);
         response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
+
+
+
 
     /**
      * Simplified error response that just reports the status code, error and message.
