@@ -44,7 +44,11 @@ public class ResultPage<T> {
     }
 
     public int getTotalPages() {
-        return (int) (getTotal() / getItemsPerPage());
+        int pages = (int) (getTotal() / getItemsPerPage());
+        if (getTotal() % getItemsPerPage() > 0) {
+            pages++;
+        }
+        return pages;
     }
 
     public int getItemsPerPage() {
