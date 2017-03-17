@@ -7,6 +7,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.domain.Pageable;
@@ -24,17 +28,18 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.annotation.RequestScope;
 import uk.co.onsdigital.discovery.metadata.api.dto.DataResourceResult;
 import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
-import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyDataSet;
 import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionMetadata;
+import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyDataSet;
 import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyResultPage;
-import uk.co.onsdigital.discovery.metadata.api.exception.DataResourceNotFoundExcecption;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.NotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.service.DimensionViewType;
 import uk.co.onsdigital.discovery.metadata.api.service.MetadataService;
 
-import javax.persistence.*;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
@@ -51,6 +56,7 @@ import static java.util.Arrays.asList;
 @SpringBootApplication
 @ComponentScan(basePackages = "uk.co.onsdigital")
 @EnableAutoConfiguration(exclude = {HibernateJpaAutoConfiguration.class})
+@EnableCaching
 public class MetadataController {
     private static final Logger logger = LoggerFactory.getLogger(MetadataController.class);
 
@@ -128,6 +134,7 @@ public class MetadataController {
 
     @GetMapping("/versions/{dataSetId}/dimensions/{dimensionId}")
     @CrossOrigin
+    @Cacheable("dimensions")
     public DimensionMetadata findDimensionByIdWithDatasetUuid(@PathVariable String dataSetId, @PathVariable String dimensionId,
                                                @RequestParam(name = "view", defaultValue = "list") String view)
             throws DataSetNotFoundException, DimensionNotFoundException {
@@ -138,6 +145,7 @@ public class MetadataController {
 
     @GetMapping("/datasets/{dataSetId}/editions/{edition}/versions/{version}/dimensions/{dimensionId}")
     @CrossOrigin
+    @Cacheable("dimensions")
     public DimensionMetadata findDimensionByIdWithEditionVersion(@PathVariable String dataSetId, @PathVariable String edition,
                                                                  @PathVariable int version, @PathVariable String dimensionId,
                                                @RequestParam(name = "view", defaultValue = "list") String view)
@@ -157,6 +165,7 @@ public class MetadataController {
 
     @GetMapping("/hierarchies/{hierarchyId}")
     @CrossOrigin
+    @Cacheable("hierarchies")
     public DimensionMetadata getHierarchy(@PathVariable String hierarchyId) throws DimensionNotFoundException {
         logger.debug("Request for hierarchy " + hierarchyId);
         return metadataService.getHierarchy(hierarchyId);
@@ -202,6 +211,11 @@ public class MetadataController {
     @Bean
     public PlatformTransactionManager getTransactionManager(final EntityManagerFactory emf) {
         return new JpaTransactionManager(emf);
+    }
+
+    @Bean
+    public CacheManager getCacheManager() {
+        return new ConcurrentMapCacheManager("hierarchies", "dimensions");
     }
 
     @ExceptionHandler(NotFoundException.class)
