@@ -36,7 +36,6 @@ public class DimensionalDataSetResult extends LegacyDataSet {
         return "DataSet{" +
                 "id='" + id + '\'' +
                 ", title='" + title + '\'' +
-                ", s3URL='" + s3URL + '\'' +
                 ", url='" + url + '\'' +
                 ", edition=" + edition + "\'" +
                 ", version=" + version + "\'" +

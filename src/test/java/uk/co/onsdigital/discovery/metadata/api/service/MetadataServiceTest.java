@@ -240,7 +240,6 @@ public class MetadataServiceTest {
 
     private static void assertDataSetEqualsDbModel(final LegacyDataSet actual, final DataSet expected) {
         assertThat(actual.getId()).isEqualTo(expected.getId().toString());
-        assertThat(actual.getS3URL()).isEqualTo(expected.getS3URL());
     }
 
     private DataSet dbDataSet(UUID dataSetId, String s3URL, String description) {

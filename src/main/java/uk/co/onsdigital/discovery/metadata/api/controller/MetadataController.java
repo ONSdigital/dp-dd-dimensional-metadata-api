@@ -3,14 +3,21 @@ package uk.co.onsdigital.discovery.metadata.api.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -24,22 +31,24 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.annotation.RequestScope;
 import uk.co.onsdigital.discovery.metadata.api.dto.DataResourceResult;
 import uk.co.onsdigital.discovery.metadata.api.dto.ResultPage;
-import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyDataSet;
 import uk.co.onsdigital.discovery.metadata.api.dto.common.DimensionMetadata;
+import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyDataSet;
 import uk.co.onsdigital.discovery.metadata.api.dto.legacy.LegacyResultPage;
-import uk.co.onsdigital.discovery.metadata.api.exception.DataResourceNotFoundExcecption;
 import uk.co.onsdigital.discovery.metadata.api.exception.DataSetNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.DimensionNotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.exception.NotFoundException;
 import uk.co.onsdigital.discovery.metadata.api.service.DimensionViewType;
 import uk.co.onsdigital.discovery.metadata.api.service.MetadataService;
 
-import javax.persistence.*;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.max;
 import static java.util.Arrays.asList;
@@ -51,11 +60,19 @@ import static java.util.Arrays.asList;
 @SpringBootApplication
 @ComponentScan(basePackages = "uk.co.onsdigital")
 @EnableAutoConfiguration(exclude = {HibernateJpaAutoConfiguration.class})
+@EnableCaching
 public class MetadataController {
     private static final Logger logger = LoggerFactory.getLogger(MetadataController.class);
 
+    private final MetadataService metadataService;
+    private final int defaultCacheTimeMinutes;
+
     @Autowired
-    private MetadataService metadataService;
+    public MetadataController(MetadataService metadataService,
+                              @Value("${default.cache.time.minutes}") int defaultCacheTimeMinutes) {
+        this.metadataService = metadataService;
+        this.defaultCacheTimeMinutes = defaultCacheTimeMinutes;
+    }
 
     public static void main(String...args) {
         SpringApplication.run(MetadataController.class, args);
@@ -90,7 +107,6 @@ public class MetadataController {
         logger.debug("Request for a dataset with version: " + dataSetId);
         return metadataService.findDataSetByUuid(dataSetId);
     }
-
 
     @GetMapping("/datasets/{dataSetId}")
     @CrossOrigin
@@ -128,24 +144,34 @@ public class MetadataController {
 
     @GetMapping("/versions/{dataSetId}/dimensions/{dimensionId}")
     @CrossOrigin
-    public DimensionMetadata findDimensionByIdWithDatasetUuid(@PathVariable String dataSetId, @PathVariable String dimensionId,
+    @Cacheable("dimensions")
+    public ResponseEntity<DimensionMetadata> findDimensionByIdWithDatasetUuid(@PathVariable String dataSetId, @PathVariable String dimensionId,
                                                @RequestParam(name = "view", defaultValue = "list") String view)
             throws DataSetNotFoundException, DimensionNotFoundException {
         logger.debug("Request for a dimension for dataset version " + dataSetId + " and dimensionId " + dimensionId);
         final DimensionViewType viewType = DimensionViewType.valueOf(view.toUpperCase());
-        return metadataService.findDimensionByIdWithDatasetUuid(dataSetId, dimensionId, viewType);
+
+        DimensionMetadata dimensionMetadata = metadataService.findDimensionByIdWithDatasetUuid(dataSetId, dimensionId, viewType);
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(defaultCacheTimeMinutes, TimeUnit.MINUTES))
+                .body(dimensionMetadata);
     }
 
     @GetMapping("/datasets/{dataSetId}/editions/{edition}/versions/{version}/dimensions/{dimensionId}")
     @CrossOrigin
-    public DimensionMetadata findDimensionByIdWithEditionVersion(@PathVariable String dataSetId, @PathVariable String edition,
+    @Cacheable("dimensions")
+    public ResponseEntity<DimensionMetadata> findDimensionByIdWithEditionVersion(@PathVariable String dataSetId, @PathVariable String edition,
                                                                  @PathVariable int version, @PathVariable String dimensionId,
                                                @RequestParam(name = "view", defaultValue = "list") String view)
             throws DataSetNotFoundException, DimensionNotFoundException {
         logger.debug("Request for a dataset with the following data-resource/edition/version: " +
                 String.join("/", new String[]{dataSetId, edition, Integer.toString(version)}));
         final DimensionViewType viewType = DimensionViewType.valueOf(view.toUpperCase());
-        return metadataService.findDimensionByIdWithEditionVersion(dataSetId, edition, version, dimensionId, viewType);
+
+        DimensionMetadata dimensionMetadata = metadataService.findDimensionByIdWithEditionVersion(dataSetId, edition, version, dimensionId, viewType);
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(defaultCacheTimeMinutes, TimeUnit.MINUTES))
+                .body(dimensionMetadata);
     }
 
     @GetMapping("/hierarchies")
@@ -157,9 +183,13 @@ public class MetadataController {
 
     @GetMapping("/hierarchies/{hierarchyId}")
     @CrossOrigin
-    public DimensionMetadata getHierarchy(@PathVariable String hierarchyId) throws DimensionNotFoundException {
+    @Cacheable("hierarchies")
+    public ResponseEntity<DimensionMetadata> getHierarchy(@PathVariable String hierarchyId) throws DimensionNotFoundException {
         logger.debug("Request for hierarchy " + hierarchyId);
-        return metadataService.getHierarchy(hierarchyId);
+        DimensionMetadata hierarchy = metadataService.getHierarchy(hierarchyId);
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(defaultCacheTimeMinutes, TimeUnit.MINUTES))
+                .body(hierarchy);
     }
 
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
@@ -202,6 +232,11 @@ public class MetadataController {
     @Bean
     public PlatformTransactionManager getTransactionManager(final EntityManagerFactory emf) {
         return new JpaTransactionManager(emf);
+    }
+
+    @Bean
+    public CacheManager getCacheManager() {
+        return new ConcurrentMapCacheManager("hierarchies", "dimensions");
     }
 
     @ExceptionHandler(NotFoundException.class)

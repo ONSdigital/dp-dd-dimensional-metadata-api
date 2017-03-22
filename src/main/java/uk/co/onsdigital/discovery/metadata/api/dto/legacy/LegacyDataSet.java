@@ -14,7 +14,6 @@ import java.util.List;
 public class LegacyDataSet {
 
     protected String id;
-    protected String s3URL;
     protected String title;
     protected String url;
     protected String metadata;
@@ -27,14 +26,6 @@ public class LegacyDataSet {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getS3URL() {
-        return s3URL;
-    }
-
-    public void setS3URL(String s3URL) {
-        this.s3URL = s3URL;
     }
 
     public String getTitle() {
@@ -83,7 +74,6 @@ public class LegacyDataSet {
         return "DataSet{" +
                 "id='" + id + '\'' +
                 ", title='" + title + '\'' +
-                ", s3URL='" + s3URL + '\'' +
                 ", url='" + url + '\'' +
                 ", metadata=" + metadata +
                 '}';

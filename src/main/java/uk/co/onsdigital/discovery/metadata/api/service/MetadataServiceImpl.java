@@ -138,7 +138,6 @@ public class MetadataServiceImpl implements MetadataService {
         final LegacyDataSet dataSet = new LegacyDataSet();
         dataSet.setId(dbDataSet.getId().toString());
         dataSet.setTitle(dbDataSet.getTitle());
-        dataSet.setS3URL(dbDataSet.getS3URL());
         dataSet.setMetadata(StringUtils.defaultIfEmpty(dbDataSet.getMetadata(), "{}"));
         dataSet.setUrl(legacyUrlBuilder.dataset(dataSet.getId()));
         dataSet.setDimensionsUrl(legacyUrlBuilder.dimensions(dataSet.getId()));
@@ -166,7 +165,6 @@ public class MetadataServiceImpl implements MetadataService {
         ddSet.setId(dbDataSet.getId().toString());
         ddSet.setDatasetId(dbDataSet.getDataResource().getId());
         ddSet.setTitle(dbDataSet.getTitle());
-        ddSet.setS3URL(dbDataSet.getS3URL());
         ddSet.setMetadata(defaultIfEmpty(dbDataSet.getMetadata(), "{}"));
         ddSet.setVersion(Integer.toString(dbDataSet.getMinorVersion()));
         ddSet.setEdition(dbDataSet.getMajorLabel());
