@@ -26,6 +26,7 @@ following environment variables to configure the system:
  * `DB_URL`: The database JDBC URL. Defaults to `jdbc:postgresql://localhost:5432/data_discovery`.
  * `DB_DRIVER`: The JDBC driver to load. Defaults to `org.postgresql.Driver`.
  * `INCLUDE_GEO_DIMENSIONS`: Whether to expose geographical hierarchies as dimensions. Defaults to `false`.
+ * `DEFAULT_CACHE_TIME_MINUTES`: The default max-age value to use in cache control headers.
 
 ## Contributing
 
