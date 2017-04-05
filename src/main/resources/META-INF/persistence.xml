@@ -18,9 +18,11 @@
             <property name="javax.persistence.jdbc.password" value="password" />
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.c3p0.min_size" value="5"/>
-            <property name="hibernate.c3p0.max_size" value="20"/>
+            <property name="hibernate.c3p0.max_size" value="50"/>
             <property name="hibernate.c3p0.timeout" value="1800"/>
             <property name="hibernate.c3p0.max_statements" value="50"/>
+            <property name="hibernate.c3p0.numHelperThreads" value="6"/>
+            <property name="hibernate.c3p0.unreturnedConnectionTimeout" value="90"/>
         </properties>
     </persistence-unit>
 </persistence>
