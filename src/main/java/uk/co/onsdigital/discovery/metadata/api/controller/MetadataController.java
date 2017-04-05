@@ -104,7 +104,6 @@ public class MetadataController {
 
     @GetMapping("/versions")
     @CrossOrigin
-    @Cacheable(DATASETS_TEMP)
     public LegacyResultPage<LegacyDataSet> listAvailableDataSets(Pageable pageable) {
         // Ensure pageNumber and pageSize are both at least 1
         logger.debug("Request on /versions from page " + pageable.getPageNumber() + "and size " + pageable.getPageSize());
@@ -114,6 +113,7 @@ public class MetadataController {
 
     @GetMapping("/versions/{dataSetId}")
     @CrossOrigin
+    @Cacheable(DATASETS_TEMP)
     public LegacyDataSet findDataSetByUuid(@PathVariable String dataSetId) throws DataSetNotFoundException {
         logger.debug("Request for a dataset with version: " + dataSetId);
         return metadataService.findDataSetByUuid(dataSetId);
