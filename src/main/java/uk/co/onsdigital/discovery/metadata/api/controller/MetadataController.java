@@ -9,8 +9,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.annotation.*;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -19,6 +18,8 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -61,8 +62,16 @@ import static java.util.Arrays.asList;
 @ComponentScan(basePackages = "uk.co.onsdigital")
 @EnableAutoConfiguration(exclude = {HibernateJpaAutoConfiguration.class})
 @EnableCaching
+@EnableScheduling
 public class MetadataController {
     private static final Logger logger = LoggerFactory.getLogger(MetadataController.class);
+
+    // Names of spring caches
+    public static final String DATASETS = "datasets";
+    public static final String DIMENSIONS = "dimensions";
+    public static final String HIERARCHIES = "hierarchies";
+    public static final String DATASETS_TEMP = "datasets-temp";
+    public static final String HIERARCHIES_TEMP = "hierarchies-temp";
 
     private final MetadataService metadataService;
     private final int defaultCacheTimeMinutes;
@@ -86,6 +95,7 @@ public class MetadataController {
 
     @GetMapping("/datasets")
     @CrossOrigin
+    @Cacheable(DATASETS_TEMP)
     public ResultPage<DataResourceResult> listAvailableVersions(Pageable pageable) {
         // Ensure pageNumber and pageSize are both at least 1
         logger.debug("Request on /datasets from page " + pageable.getPageNumber() + "and size " + pageable.getPageSize());
@@ -103,6 +113,7 @@ public class MetadataController {
 
     @GetMapping("/versions/{dataSetId}")
     @CrossOrigin
+    @Cacheable(DATASETS_TEMP)
     public LegacyDataSet findDataSetByUuid(@PathVariable String dataSetId) throws DataSetNotFoundException {
         logger.debug("Request for a dataset with version: " + dataSetId);
         return metadataService.findDataSetByUuid(dataSetId);
@@ -110,6 +121,7 @@ public class MetadataController {
 
     @GetMapping("/datasets/{dataSetId}")
     @CrossOrigin
+    @Cacheable(DATASETS)
     public DataResourceResult findDataResource(@PathVariable String dataSetId) throws DataSetNotFoundException {
         logger.debug("Request for a data-resource with id: " + dataSetId);
         return metadataService.findDataResource(dataSetId);
@@ -117,6 +129,7 @@ public class MetadataController {
 
     @GetMapping("/datasets/{dataSetId}/editions/{edition}/versions/{version}")
     @CrossOrigin
+    @Cacheable(DATASETS)
     public LegacyDataSet findDataSetByEditionAndVersion(@PathVariable String dataSetId, @PathVariable String edition,
                                                         @PathVariable int version)
             throws DataSetNotFoundException {
@@ -127,6 +140,7 @@ public class MetadataController {
 
     @GetMapping("/versions/{dataSetId}/dimensions")
     @CrossOrigin
+    @Cacheable(DIMENSIONS)
     public List<DimensionMetadata> listDimensionsForDataSetUuid(@PathVariable String dataSetId) throws DataSetNotFoundException {
         logger.debug("Request for all dimensions of dataset version: " + dataSetId);
         return metadataService.listDimensionsForDataSetUuid(dataSetId);
@@ -134,6 +148,7 @@ public class MetadataController {
 
     @GetMapping("/datasets/{dataSetId}/editions/{edition}/versions/{version}/dimensions")
     @CrossOrigin
+    @Cacheable(DIMENSIONS)
     public List<DimensionMetadata> listDimensionsforDataSetEditionVersion(@PathVariable String dataSetId, @PathVariable String edition,
                                                                           @PathVariable int version)
             throws DataSetNotFoundException {
@@ -144,7 +159,7 @@ public class MetadataController {
 
     @GetMapping("/versions/{dataSetId}/dimensions/{dimensionId}")
     @CrossOrigin
-    @Cacheable("dimensions")
+    @Cacheable(DIMENSIONS)
     public ResponseEntity<DimensionMetadata> findDimensionByIdWithDatasetUuid(@PathVariable String dataSetId, @PathVariable String dimensionId,
                                                @RequestParam(name = "view", defaultValue = "list") String view)
             throws DataSetNotFoundException, DimensionNotFoundException {
@@ -159,7 +174,7 @@ public class MetadataController {
 
     @GetMapping("/datasets/{dataSetId}/editions/{edition}/versions/{version}/dimensions/{dimensionId}")
     @CrossOrigin
-    @Cacheable("dimensions")
+    @Cacheable(DIMENSIONS)
     public ResponseEntity<DimensionMetadata> findDimensionByIdWithEditionVersion(@PathVariable String dataSetId, @PathVariable String edition,
                                                                  @PathVariable int version, @PathVariable String dimensionId,
                                                @RequestParam(name = "view", defaultValue = "list") String view)
@@ -176,6 +191,7 @@ public class MetadataController {
 
     @GetMapping("/hierarchies")
     @CrossOrigin
+    @Cacheable(HIERARCHIES_TEMP)
     public List<DimensionMetadata> listHierarchies() {
         logger.debug("Request on /hierarchies, listing all hierarchies");
         return metadataService.listHierarchies();
@@ -183,7 +199,7 @@ public class MetadataController {
 
     @GetMapping("/hierarchies/{hierarchyId}")
     @CrossOrigin
-    @Cacheable("hierarchies")
+    @Cacheable(HIERARCHIES)
     public ResponseEntity<DimensionMetadata> getHierarchy(@PathVariable String hierarchyId) throws DimensionNotFoundException {
         logger.debug("Request for hierarchy " + hierarchyId);
         DimensionMetadata hierarchy = metadataService.getHierarchy(hierarchyId);
@@ -236,7 +252,13 @@ public class MetadataController {
 
     @Bean
     public CacheManager getCacheManager() {
-        return new ConcurrentMapCacheManager("hierarchies", "dimensions");
+        return new ConcurrentMapCacheManager(HIERARCHIES, DIMENSIONS, DATASETS, DATASETS_TEMP, HIERARCHIES_TEMP);
+    }
+
+    @CacheEvict(allEntries = true, value = {HIERARCHIES_TEMP, DATASETS_TEMP})
+    @Scheduled(fixedRate = 15000)
+    public void evictTemporaryCache() {
+        logger.trace("Evicting temporary caches");
     }
 
     @ExceptionHandler(NotFoundException.class)

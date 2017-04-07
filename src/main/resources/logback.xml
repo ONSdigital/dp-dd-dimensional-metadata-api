@@ -11,4 +11,7 @@
     <root level="info">
         <appender-ref ref="STDOUT" />
     </root>
+
+    <logger name="uk.co.onsdigital.discovery.metadata.api.controller.MetadataController" level="DEBUG" />
+
 </configuration>
